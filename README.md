@@ -1,5 +1,5 @@
-## TuyenSinhApp
-# The steps run the project
+# TuyenSinhApp
+## The steps run the project
 1. Cloning the project
 2. Openning one of projects
 3. Reinstalling the libraries: pip install -r requirements.txt
