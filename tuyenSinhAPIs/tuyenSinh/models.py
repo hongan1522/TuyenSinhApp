@@ -14,26 +14,25 @@ class Khoa(BaseModel):
     name = models.CharField(max_length=50, unique=True)
     introduction = models.TextField()
     program_description = models.TextField(default='')
-    # website = models.URLField(validators=[URLValidator()])
-    # video = models.URLField(validators=[URLValidator()], null=True)
-    website = models.FileField(upload_to='khoa/website/%Y/%m/')
+    website = models.URLField(validators=[URLValidator()])
     video = models.FileField(upload_to='khoa/video/%Y/%m/', null=True, blank=True)
 
     def __str__(self):
-        return self.name
+        return self.website
 
 class Diem(models.Model):
     value = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(30)])
 
     def __str__(self):
-        return self.value
+        return str(self.value)
 
 class Diem_Khoa(BaseModel):
     khoa = models.ForeignKey(Khoa, on_delete=models.PROTECT)
     diem = models.ForeignKey(Diem, on_delete=models.PROTECT)
+    year = models.IntegerField()
 
     class Meta:
-        unique_together = ('khoa', 'diem')
+        unique_together = ('khoa', 'diem', 'year')
 
     def __str__(self):
         return f"{self.khoa.name} - {self.diem.value}"
@@ -93,7 +92,7 @@ class ThiSinh(models.Model):
     birthday = models.DateField()
     gender = models.IntegerField(choices=GENDER_CHOICES, default=Nam)
     email = models.EmailField()
-    avatar = models.ImageField(upload_to='thiSinh/%Y/%m/', null=False)
+    avatar = models.ImageField(upload_to='thiSinh/avatar/%Y/%m/', null=False)
 
     def __str__(self):
         return self.name

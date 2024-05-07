@@ -16,8 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from tuyenSinh import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('app/', include('tuyenSinh.urls')),
+    path('khoa/video/<str:year>/<str:month>/<str:filename>', views.khoa_video, name='serve_video'),
 ]
