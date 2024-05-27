@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ khoa.name }} - Điểm 5 năm gần nhất</title>
+    <link rel="stylesheet" href="/static/css/khoaStyle.css">
+</head>
+<body>
+    <h2>Điểm trúng tuyển 5 năm gần nhất của {{ khoa.name }}</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Năm</th>
+                <th>Điểm</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for score in latest_scores %}
+            <tr>
+                <td>{{ score.year }}</td>
+                <td>{{ score.diem.value }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

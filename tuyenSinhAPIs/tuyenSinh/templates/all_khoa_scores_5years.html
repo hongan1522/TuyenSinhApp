@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Điểm trung tuyển gần nhất các khoa</title>
+    <link rel="stylesheet" href="/static/css/khoaStyle.css">
+</head>
+<body>
+<h1>Điểm trúng tuyển 5 năm gần nhất của các khoa</h1>
+<table>
+    <thead>
+    <tr>
+        <th>Tên ngành</th>
+        <th>Năm {{ current_year }}</th>
+        <th>Năm {{ previous_year }}</th>
+        <th>Năm {{ previous_year1 }}</th>
+        <th>Năm {{ previous_year2 }}</th>
+        <th>Năm {{ previous_year3 }}</th>
+    </thead>
+    <tbody>
+    {% for khoa_score in khoa_scores %}
+    <tr>
+        <td>{{ khoa_score.khoa.name }}</td>
+        {% for score in khoa_score.latest_scores %}
+        <td>{{ score.diem.value }}</td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</body>
+</html>

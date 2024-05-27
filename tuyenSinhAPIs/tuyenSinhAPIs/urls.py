@@ -15,11 +15,15 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from tuyenSinh import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('app/', include('tuyenSinh.urls')),
-    path('khoa/video/<str:year>/<str:month>/<str:filename>', views.khoa_video, name='serve_video'),
+    path('khoa/video/<str:year>/<str:month>/<str:filename>', views.get_khoa_video, name='videoKhoa'),
+    path('khoa/<int:id>/', views.khoa_detail, name='chiTietKhoa'),
+    path('khoa/<int:id>/diem/', views.get_5years_diem, name='diemTrungTuyenTungKhoa'),
+    path('khoa/diem/', views.get_latest_scores, name='diemTrungTuyenTatCaKhoa'),
+    re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),
 ]

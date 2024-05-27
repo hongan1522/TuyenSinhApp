@@ -1,6 +1,10 @@
+import datetime
+
 from django.db import models
 from django.core.validators import URLValidator, MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import AbstractUser
+from ckeditor.fields import RichTextField
+from cloudinary.models import CloudinaryField
 
 class BaseModel(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
@@ -9,33 +13,40 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ['-id']
 
 class Khoa(BaseModel):
     name = models.CharField(max_length=50, unique=True)
-    introduction = models.TextField()
-    program_description = models.TextField(default='')
+    introduction = RichTextField()
+    program_description = RichTextField()
     website = models.URLField(validators=[URLValidator()])
-    video = models.FileField(upload_to='khoa/video/%Y/%m/', null=True, blank=True)
+    # video = models.FileField(upload_to='khoa/video/%Y/%m/', null=True, blank=True)
+    video = CloudinaryField(resource_type='video')
 
     def __str__(self):
-        return self.website
+        return self.name
+
+    def get_latest_scores(self, years=5):
+        current_year = datetime.date.today().year
+        return Diem_Khoa.objects.filter(khoa=self, year__gte=current_year - years + 1).order_by('-year')
 
 class Diem(models.Model):
-    value = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(30)])
+    value = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(30)], unique=True)
 
     def __str__(self):
-        return str(self.value)
+        return f"{self.value}"
 
 class Diem_Khoa(BaseModel):
     khoa = models.ForeignKey(Khoa, on_delete=models.PROTECT)
     diem = models.ForeignKey(Diem, on_delete=models.PROTECT)
-    year = models.IntegerField()
+    year = models.IntegerField(validators=[MinValueValidator(2000), MaxValueValidator(datetime.date.today().year)], default=datetime.date.today().year)
 
     class Meta:
-        unique_together = ('khoa', 'diem', 'year')
+        unique_together = ('khoa', 'year')
 
     def __str__(self):
-        return f"{self.khoa.name} - {self.diem.value}"
+        return f"{self.khoa.name} - {self.diem.value} ({self.year})"
+
 
 class User(AbstractUser):
     ADMIN = 0
@@ -49,6 +60,7 @@ class User(AbstractUser):
     ]
 
     role = models.IntegerField(choices=ROLE_CHOICES, default=THI_SINH)
+    avatar = CloudinaryField()
 
     def __str__(self):
         return self.username
@@ -92,7 +104,6 @@ class ThiSinh(models.Model):
     birthday = models.DateField()
     gender = models.IntegerField(choices=GENDER_CHOICES, default=Nam)
     email = models.EmailField()
-    avatar = models.ImageField(upload_to='thiSinh/avatar/%Y/%m/', null=False)
 
     def __str__(self):
         return self.name

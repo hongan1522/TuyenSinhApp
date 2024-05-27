@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ khoa.name }}</title>
+    <link rel="stylesheet" href="/static/css/khoaStyle.css">
+</head>
+<body>
+    <h1>Khoa {{ khoa.name }}</h1>
+    <p> <strong>Giới thiệu về khoa:</strong> <br> {{ khoa.introduction|safe }}</p>
+    <p> <strong>Chương trình đào tạo của khoa: </strong> <br> {{ khoa.program_description|safe }}</p>
+    <p> <strong> Website: </strong> <a href="{{ khoa.website }}" target="_blank">Website {{khoa.name}}</a></p>
+    <p><strong>Video: <br>
+    {% if khoa.video %}
+        <video width="320" height="240" controls>
+            <source src="{{ khoa.video.url }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    {% endif %}
+    </strong></p>
+    <h2>Điểm trúng tuyển các năm của {{ khoa.name }}</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Năm</th>
+                <th>Điểm</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for score in all_scores %}
+            <tr>
+                <td>{{ score.year }}</td>
+                <td>{{ score.diem.value }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="2">Không có dữ liệu</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

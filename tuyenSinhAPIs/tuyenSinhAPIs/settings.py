@@ -41,7 +41,19 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'tuyenSinh.apps.TuyensinhConfig',
+    'ckeditor',
+    'ckeditor_uploader',
 ]
+
+CKEDITOR_UPLOAD_PATH = "ckeditors/images/"
+
+import cloudinary
+
+cloudinary.config(
+    cloud_name="dcxpivgx4",
+    api_key="776633212396899",
+    api_secret="4j2hU8XadHTceB8aPOXtRVT5wj0"
+)
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -58,7 +70,7 @@ ROOT_URLCONF = 'tuyenSinhAPIs.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
