@@ -1,5 +1,5 @@
 from django.contrib import admin
-from tuyenSinh.models import Khoa, Diem, ThiSinh, TuyenSinh, TinTuc, BinhLuan, Banner, Diem_Khoa
+from tuyenSinh.models import Khoa, Diem, ThiSinh, TuyenSinh, TinTuc, BinhLuan, Banner, Diem_Khoa, TuVanVien
 from django.utils.html import mark_safe, format_html
 from django import forms
 from ckeditor_uploader.widgets import CKEditorUploadingWidget
@@ -59,19 +59,38 @@ class DiemAdmin(admin.ModelAdmin):
             'all': ['/static/css/style.css']
         }
 
-# class DiemKhoaAdmin(admin.ModelAdmin):
-#     list_display = ['id', 'khoa', 'diem', 'year']
-#     search_fields = ['khoa', 'year']
-#     ordering = ['id']
-#     list_filter = ['khoa', 'year']
-#
-#     class Media:
-#         css = {
-#             'all': ['/static/css/style.css']
-#         }
+class Diem_KhoaAdmin(admin.ModelAdmin):
+    list_display = ['id', 'khoa', 'diem', 'year']
+    search_fields = ['khoa']
+    ordering = ['id']
 
+    class Media:
+        css = {
+            'all': ['/static/css/style.css']
+        }
+
+class ThiSinhAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'formatted_birthday', 'email']
+    search_fields = ['name']
+    ordering = ['id']
+
+    class Media:
+        css = {
+            'all': ['/static/css/style.css']
+        }
+
+class TVVAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'khoa', 'formatted_birthday', 'email']
+    search_fields = ['name', 'khoa']
+    ordering = ['id']
+
+    class Media:
+        css = {
+            'all': ['/static/css/style.css']
+        }
 
 admin.site.register(Khoa, KhoaAdmin)
 admin.site.register(Diem, DiemAdmin)
-admin.site.register(Diem_Khoa)
-admin.site.register(ThiSinh)
+admin.site.register(Diem_Khoa, Diem_KhoaAdmin)
+admin.site.register(ThiSinh, ThiSinhAdmin)
+admin.site.register(TuVanVien, TVVAdmin)

@@ -17,7 +17,16 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from tuyenSinh import views
+from rest_framework import routers
+from tuyenSinh import views
+
+r = routers.DefaultRouter()
+r.register('khoa', views.KhoaViewSet, 'Khoa')
+r.register('diem', views.DiemViewSet, 'Điểm')
+r.register('diemkhoa', views.DiemKhoaViewSet, 'Điểm_Khoa')
+r.register('thisinh', views.ThiSinhViewSet, 'Thí sinh')
+r.register('tuvanvien', views.TuVanVienViewSet, 'Tư vấn viên')
 
 urlpatterns = [
-    path('tuyensinh/', views.index),
+    path('', include(r.urls)),
 ]

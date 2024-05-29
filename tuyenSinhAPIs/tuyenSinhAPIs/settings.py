@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'tuyenSinh.apps.TuyensinhConfig',
     'ckeditor',
     'ckeditor_uploader',
+    'rest_framework',
+    'drf_yasg'
 ]
 
 CKEDITOR_UPLOAD_PATH = "ckeditors/images/"
