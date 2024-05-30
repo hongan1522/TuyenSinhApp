@@ -25,7 +25,6 @@ class Khoa(BaseModel):
     introduction = RichTextField()
     program_description = RichTextField()
     website = models.URLField(validators=[URLValidator()])
-    # video = models.FileField(upload_to='khoa/video/%Y/%m/', null=True, blank=True)
     video = CloudinaryField(resource_type='video',  null=True, blank=True)
 
     class Meta:
@@ -50,8 +49,8 @@ class Diem(models.Model):
         return f"{self.value}"
 
 class Diem_Khoa(BaseModel):
-    khoa = models.ForeignKey(Khoa, on_delete=models.PROTECT)
-    diem = models.ForeignKey(Diem, on_delete=models.PROTECT)
+    khoa = models.ForeignKey(Khoa, on_delete=models.PROTECT, related_name='diem_khoa_set')
+    diem = models.ForeignKey(Diem, on_delete=models.PROTECT, related_name='diem_diem_set')
     year = models.IntegerField(validators=[MinValueValidator(2000), MaxValueValidator(datetime.date.today().year)], default=datetime.date.today().year)
 
     class Meta:
@@ -91,9 +90,9 @@ def validate_birthday(value):
     age_limit = today - relativedelta(years=18)
 
     if value < min_date:
-        raise ValidationError(f'Ngày sinh phải sau ngày {min_date}')
+        raise ValidationError(f'Date of birth must be after date {min_date}')
     if value > age_limit:
-        raise ValidationError('Người dùng phải ít nhất 18 tuổi')
+        raise ValidationError('Users must be at least 18 years old')
 
 class TuVanVien(models.Model):
     Nam = 0
@@ -105,7 +104,7 @@ class TuVanVien(models.Model):
     ]
 
     user = models.OneToOneField(User, on_delete=models.PROTECT, related_name='tvv_profile')
-    khoa = models.ForeignKey(Khoa, on_delete=models.PROTECT)
+    khoa = models.ForeignKey(Khoa, on_delete=models.PROTECT, related_name='khoa')
     gender = models.IntegerField(choices=GENDER_CHOICES, default=Nam)
     name = models.CharField(max_length=50)
     birthday = models.DateField()

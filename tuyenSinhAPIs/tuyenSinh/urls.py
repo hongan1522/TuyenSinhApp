@@ -26,6 +26,7 @@ r.register('diem', views.DiemViewSet, 'Điểm')
 r.register('diemkhoa', views.DiemKhoaViewSet, 'Điểm_Khoa')
 r.register('thisinh', views.ThiSinhViewSet, 'Thí sinh')
 r.register('tuvanvien', views.TuVanVienViewSet, 'Tư vấn viên')
+r.register('user', views.UserViewSet, 'User')
 
 urlpatterns = [
     path('', include(r.urls)),

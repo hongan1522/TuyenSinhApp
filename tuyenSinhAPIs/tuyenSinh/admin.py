@@ -1,5 +1,7 @@
 from django.contrib import admin
-from tuyenSinh.models import Khoa, Diem, ThiSinh, TuyenSinh, TinTuc, BinhLuan, Banner, Diem_Khoa, TuVanVien
+from django.core.exceptions import ValidationError
+
+from tuyenSinh.models import Khoa, Diem, ThiSinh, TuyenSinh, TinTuc, BinhLuan, Banner, Diem_Khoa, TuVanVien, User, Admin
 from django.utils.html import mark_safe, format_html
 from django import forms
 from ckeditor_uploader.widgets import CKEditorUploadingWidget
@@ -69,20 +71,50 @@ class Diem_KhoaAdmin(admin.ModelAdmin):
             'all': ['/static/css/style.css']
         }
 
+class ThiSinhForm(forms.ModelForm):
+    class Meta:
+        model = ThiSinh
+        fields = '__all__'
+
+    def clean_user(self):
+        user = self.cleaned_data.get('user')
+        if user:
+            if user.role != User.THI_SINH:
+                raise ValidationError("User is not assigned the ThiSinh role.")
+            if Admin.objects.filter(user=user).exists() or TuVanVien.objects.filter(user=user).exists():
+                raise ValidationError("User is already assigned to another role.")
+        return user
+
 class ThiSinhAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'formatted_birthday', 'email']
     search_fields = ['name']
     ordering = ['id']
+    form = ThiSinhForm
 
     class Media:
         css = {
             'all': ['/static/css/style.css']
         }
 
+class TuVanVienForm(forms.ModelForm):
+    class Meta:
+        model = TuVanVien
+        fields = '__all__'
+
+    def clean_user(self):
+        user = self.cleaned_data.get('user')
+        if user:
+            if user.role != User.TU_VAN_VIEN:
+                raise ValidationError("User is not assigned the TuVanVien role.")
+            if Admin.objects.filter(user=user).exists() or ThiSinh.objects.filter(user=user).exists():
+                raise ValidationError("User is already assigned to another role.")
+        return user
+
 class TVVAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'khoa', 'formatted_birthday', 'email']
     search_fields = ['name', 'khoa']
     ordering = ['id']
+    form = TuVanVienForm
 
     class Media:
         css = {
