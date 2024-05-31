@@ -49,8 +49,8 @@ class Diem(models.Model):
         return f"{self.value}"
 
 class Diem_Khoa(BaseModel):
-    khoa = models.ForeignKey(Khoa, on_delete=models.PROTECT, related_name='diem_khoa_set')
-    diem = models.ForeignKey(Diem, on_delete=models.PROTECT, related_name='diem_diem_set')
+    khoa = models.ForeignKey(Khoa, on_delete=models.PROTECT, related_name='diem_khoa')
+    diem = models.ForeignKey(Diem, on_delete=models.PROTECT, related_name='diem_diem')
     year = models.IntegerField(validators=[MinValueValidator(2000), MaxValueValidator(datetime.date.today().year)], default=datetime.date.today().year)
 
     class Meta:
@@ -75,11 +75,15 @@ class User(AbstractUser):
     role = models.IntegerField(choices=ROLE_CHOICES, default=THI_SINH)
     avatar = CloudinaryField(blank=False, null=False)
 
+    class Meta:
+        verbose_name = 'Tài khoản'
+        verbose_name_plural = 'Tài khoản'
+
     def __str__(self):
         return self.username
 
 class Admin(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='admin_profile', primary_key=True)
+    user = models.OneToOneField(User, on_delete=models.PROTECT, related_name='admin_profile', primary_key=True)
 
     def __str__(self):
         return self.user.username

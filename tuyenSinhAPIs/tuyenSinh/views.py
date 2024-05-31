@@ -81,7 +81,52 @@ class KhoaViewSet(viewsets.ViewSet, generics.ListAPIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def destroy(self, request, pk=None):
+        try:
+            khoa = Khoa.objects.get(pk=pk)
+            khoa.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Khoa.DoesNotExist:
+            return Response({"detail": "Khoa not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def partial_update(self, request, pk=None):
+        try:
+            khoa = Khoa.objects.get(pk=pk)
+        except Khoa.DoesNotExist:
+            return Response({"detail": "Khoa not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = serializers.KhoaSerializer(khoa, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, pk=None):
+        try:
+            khoa = Khoa.objects.get(pk=pk)
+        except Khoa.DoesNotExist:
+            return Response({"detail": "Khoa not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = serializers.KhoaSerializer(khoa, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     @action(methods=['get'], url_path='diem', detail=True)
+    def get_scores(self, request, pk=None):
+        try:
+            diem_khoa = Diem_Khoa.objects.filter(khoa_id=pk).order_by('-year')
+
+            if diem_khoa.exists():
+                serializer = serializers.DiemKhoaSerializer(diem_khoa, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Khoa.DoesNotExist:
+            return Response({"detail": "Khoa not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(methods=['get'], url_path='', detail=True)
     def get_scores_5year(self, request, pk=None):
         try:
             current_year = datetime.date.today().year
@@ -127,6 +172,26 @@ class DiemViewSet(viewsets.ViewSet, generics.ListAPIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def destroy(self, request, pk=None):
+        try:
+            diem = Diem.objects.get(pk=pk)
+            diem.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Diem.DoesNotExist:
+            return Response({"detail": "Diem not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def update(self, request, pk=None):
+        try:
+            diem = Diem.objects.get(pk=pk)
+        except Diem.DoesNotExist:
+            return Response({"detail": "Diem not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = serializers.DiemSerializer(diem, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class DiemKhoaViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = Diem_Khoa.objects.all()
     serializer_class = serializers.DiemKhoaSerializer
@@ -135,50 +200,49 @@ class DiemKhoaViewSet(viewsets.ViewSet, generics.ListAPIView):
     def retrieve(self, request, pk=None):
         try:
             diem_khoa = Diem_Khoa.objects.get(pk=pk)
-            serializer = serializers.DiemKhoaSerializer(diem_khoa)
+            serializer = serializers.DiemKhoaDetailSerializer(diem_khoa)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Diem_Khoa.DoesNotExist:
             return Response({"detail": "Diem_Khoa not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    # def create(self, request):
-    #     # Lấy dữ liệu từ request
-    #     data = request.data
-    #
-    #     # Xử lý dữ liệu của Khoa
-    #     khoa_data = data.get('khoa')
-    #     if not khoa_data:
-    #         return Response({"khoa": ["This field is required."]}, status=status.HTTP_400_BAD_REQUEST)
-    #
-    #     khoa, created = Khoa.objects.get_or_create(
-    #         name=khoa_data.get('name'),
-    #         defaults={'website': khoa_data.get('website'), 'video': khoa_data.get('video')}
-    #     )
-    #
-    #     # Xử lý dữ liệu của Diem
-    #     diem_data = data.get('diem')
-    #     if not diem_data:
-    #         return Response({"diem": ["This field is required."]}, status=status.HTTP_400_BAD_REQUEST)
-    #
-    #     diem, created = Diem.objects.get_or_create(
-    #         value=diem_data.get('value')
-    #     )
-    #
-    #     # Xử lý dữ liệu của Diem_Khoa
-    #     year = data.get('year')
-    #     if not year:
-    #         return Response({"year": ["This field is required."]}, status=status.HTTP_400_BAD_REQUEST)
-    #
-    #     diem_khoa_data = {
-    #         'khoa': khoa.id,
-    #         'diem': diem.id,
-    #         'year': year
-    #     }
-    #
-    #     serializer = serializers.DiemKhoaSerializer(data=diem_khoa_data)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def create(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, pk=None):
+        try:
+            diem_khoa = Diem_Khoa.objects.get(pk=pk)
+            diem_khoa.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Diem_Khoa.DoesNotExist:
+            return Response({"detail": "Diem_Khoa not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def update(self, request, pk=None):
+        try:
+            dk = Diem_Khoa.objects.get(pk=pk)
+        except Khoa.DoesNotExist:
+            return Response({"detail": "Diem_Khoa not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = serializers.DiemKhoaSerializer(dk, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def partial_update(self, request, pk=None):
+        try:
+            dk = Diem_Khoa.objects.get(pk=pk)
+        except Diem_Khoa.DoesNotExist:
+            return Response({"detail": "Diem_Khoa not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = serializers.DiemKhoaSerializer(dk, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = User.objects.filter(is_active=True)
@@ -198,6 +262,38 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def destroy(self, request, pk=None):
+        try:
+            u = User.objects.get(pk=pk)
+            u.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except User.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def update(self, request, pk=None):
+        try:
+            u = User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = serializers.UserSerializer(u, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def partial_update(self, request, pk=None):
+        try:
+            u = User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = serializers.UserSerializer(u, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ThiSinhViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = ThiSinh.objects.all()
@@ -221,6 +317,38 @@ class ThiSinhViewSet(viewsets.ViewSet, generics.ListAPIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except ThiSinh.DoesNotExist:
             return Response({"detail": "Thi sinh not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def destroy(self, request, pk=None):
+        try:
+            ts = ThiSinh.objects.get(pk=pk)
+            ts.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except ThiSinh.DoesNotExist:
+            return Response({"detail": "Thi sinh not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def update(self, request, pk=None):
+        try:
+            ts = ThiSinh.objects.get(pk=pk)
+        except ThiSinh.DoesNotExist:
+            return Response({"detail": "ThiSinh not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = serializers.ThiSinhSerializer(ts, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def partial_update(self, request, pk=None):
+        try:
+            ts = ThiSinh.objects.get(pk=pk)
+        except ThiSinh.DoesNotExist:
+            return Response({"detail": "ThiSinh not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = serializers.ThiSinhSerializer(ts, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def create(self, request):
         serializer = self.serializer_class(data=request.data)
@@ -265,12 +393,44 @@ class TuVanVienViewSet(viewsets.ViewSet, generics.ListAPIView):
         except TuVanVien.DoesNotExist:
             return Response({"detail": "Tu van vien not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    # def create(self, request):
-    #     serializer = self.serializer_class(data=request.data)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def create(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, pk=None):
+        try:
+            tvv = TuVanVien.objects.get(pk=pk)
+            tvv.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except TuVanVien.DoesNotExist:
+            return Response({"detail": "Tu van vien not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def update(self, request, pk=None):
+        try:
+            tvv = TuVanVien.objects.get(pk=pk)
+        except TuVanVien.DoesNotExist:
+            return Response({"detail": "TuVanVien not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = serializers.TuVanVienSerializer(tvv, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def partial_update(self, request, pk=None):
+        try:
+            tvv = TuVanVien.objects.get(pk=pk)
+        except TuVanVien.DoesNotExist:
+            return Response({"detail": "TuVanVien not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = serializers.TuVanVienSerializer(tvv, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(methods=['get'], url_path='user', detail=True)
     def get_user(self, request, pk):

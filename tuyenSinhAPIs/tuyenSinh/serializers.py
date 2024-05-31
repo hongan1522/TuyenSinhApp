@@ -8,6 +8,7 @@ class KhoaSerializer(serializers.ModelSerializer):
         if video:
             req['video'] = video.url
         return req
+
     class Meta:
         model = Khoa
         fields = ['id', 'name', 'website', 'video']
@@ -18,8 +19,6 @@ class DiemSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class DiemKhoaSerializer(serializers.ModelSerializer):
-    diem = DiemSerializer()
-    khoa = KhoaSerializer()
     class Meta:
         model = Diem_Khoa
         fields = ['id', 'khoa', 'diem', 'year']
@@ -32,6 +31,19 @@ class UserSerializer(serializers.ModelSerializer):
         user.save()
 
         return user
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        if password:
+            instance.set_password(password)
+        instance.save()
+
+        return instance
+
     class Meta:
         model = User
         fields = ['id', 'first_name', 'last_name', 'username', 'password', 'email', 'avatar']
@@ -47,17 +59,24 @@ class ThiSinhSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class TuVanVienSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    # user = UserSerializer()
     class Meta:
         model = TuVanVien
         fields = ['id', 'name', 'birthday', 'gender', 'email', 'khoa', 'user']
 
 # DetailSerializers
 class KhoaDetailSerializer(KhoaSerializer):
-    diem_khoa_set = DiemKhoaSerializer(many=True, read_only=True)
+    diem_khoa = DiemKhoaSerializer(many=True, read_only=True)
     class Meta:
         model = KhoaSerializer.Meta.model
-        fields = KhoaSerializer.Meta.fields + ['introduction', 'program_description', 'diem_khoa_set']
+        fields = KhoaSerializer.Meta.fields + ['introduction', 'program_description', 'diem_khoa']
+
+class DiemKhoaDetailSerializer(DiemKhoaSerializer):
+    diem = DiemSerializer()
+    khoa = KhoaSerializer()
+    class Meta:
+        model = DiemKhoaSerializer.Meta.model
+        fields = DiemKhoaSerializer.Meta.fields + ['diem', 'khoa']
 
 class TuVanVienDetailSerializer(ThiSinhSerializer):
     khoa = KhoaSerializer()
