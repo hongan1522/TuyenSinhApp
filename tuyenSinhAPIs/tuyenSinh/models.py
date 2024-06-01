@@ -10,7 +10,6 @@ from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from django.utils.dateformat import DateFormat
 
-
 class BaseModel(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
     updates_date = models.DateTimeField(auto_now=True)

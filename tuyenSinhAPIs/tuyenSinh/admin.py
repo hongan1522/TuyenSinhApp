@@ -12,7 +12,7 @@ from tuyenSinh.models import Khoa
 
 
 # Custom AdminSite
-class TuyenSinhAdminSite(AdminSite):
+class TuyenSinhAdminSite(admin.AdminSite):
     site_header = "TuyenSinh Administration"
     site_title = "TuyenSinh Admin Portal"
     index_title = "Welcome to TuyenSinh Administration"
@@ -47,9 +47,7 @@ class TuyenSinhAdminSite(AdminSite):
         )
         return TemplateResponse(request, 'admin/statistics.html', context)
 
-
 admin_site = TuyenSinhAdminSite(name='tuyensinh_admin')
-
 
 class KhoaForm(forms.ModelForm):
     program_description = forms.CharField(widget=CKEditorUploadingWidget)
