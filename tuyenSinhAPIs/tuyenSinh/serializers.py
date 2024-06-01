@@ -1,10 +1,5 @@
 from rest_framework import serializers
-<<<<<<< HEAD
-from  tuyenSinh.models import Khoa, Diem, Diem_Khoa, ThiSinh, TuVanVien, User, BinhLuan
-=======
-from tuyenSinh.models import Khoa, Diem, Diem_Khoa, ThiSinh, TuVanVien, User, TuyenSinh, TinTuc, Banner
-
->>>>>>> d2ce1d01d53dbeea4f3ff6a5c779a579d1182ad5
+from tuyenSinh.models import Khoa, Diem, Diem_Khoa, ThiSinh, TuVanVien, User, TuyenSinh, TinTuc, Banner, BinhLuan, Admin
 
 class KhoaSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
@@ -65,6 +60,11 @@ class UserSerializer(serializers.ModelSerializer):
             }
         }
 
+class AdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Admin
+        fields = ['id', 'user']
+
 class ThiSinhSerializer(serializers.ModelSerializer):
     class Meta:
         model = ThiSinh
@@ -75,12 +75,10 @@ class TuVanVienSerializer(serializers.ModelSerializer):
         model = TuVanVien
         fields = ['id', 'name', 'birthday', 'gender', 'email', 'khoa', 'user']
 
-<<<<<<< HEAD
 class BinhLuanSerializer(serializers.ModelSerializer):
     class Meta:
         model = BinhLuan
         fields = ['id', 'user', 'tintuc']
-=======
 
 class TuyenSinhSerializer(serializers.ModelSerializer):
     class Meta:
@@ -99,8 +97,6 @@ class BannerSerializer(serializers.ModelSerializer):
         model = Banner
         fields = ['id', 'image', 'created_date', 'updates_date', 'active']
 
->>>>>>> d2ce1d01d53dbeea4f3ff6a5c779a579d1182ad5
-
 # DetailSerializers
 class KhoaDetailSerializer(KhoaSerializer):
     diem_khoa = DiemKhoaSerializer(many=True, read_only=True)
@@ -117,10 +113,17 @@ class DiemKhoaDetailSerializer(DiemKhoaSerializer):
 
 class BinhLuanDetailSerializer(BinhLuanSerializer):
     user = UserSerializer()
-    # tintuc = TinTucSerializer()
+    tintuc = TinTucSerializer()
     class Meta:
         model = BinhLuanSerializer.Meta.model
-        fields = BinhLuanSerializer.Meta.fields + ['user', 'content']
+        fields = BinhLuanSerializer.Meta.fields + ['user', 'tintuc', 'content']
+
+class AdminDetailSerializer(AdminSerializer):
+    user = UserSerializer()
+
+    class Meta:
+        model = AdminSerializer.Meta.model
+        fields = AdminSerializer.Meta.fields + ['user']
 
 class TuVanVienDetailSerializer(ThiSinhSerializer):
     khoa = KhoaSerializer()

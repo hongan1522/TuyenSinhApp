@@ -6,11 +6,7 @@ from rest_framework import viewsets, generics, status, parsers
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.conf import settings
-<<<<<<< HEAD
-from tuyenSinh.models import Khoa, Diem, Diem_Khoa, ThiSinh, TuVanVien, User, BinhLuan
-=======
-from tuyenSinh.models import Khoa, Diem, Diem_Khoa, ThiSinh, TuVanVien, User, TuyenSinh, TinTuc, Banner
->>>>>>> d2ce1d01d53dbeea4f3ff6a5c779a579d1182ad5
+from tuyenSinh.models import Khoa, Diem, Diem_Khoa, ThiSinh, TuVanVien, User, TuyenSinh, TinTuc, Banner, BinhLuan, Admin
 from django.shortcuts import render
 from tuyenSinh import serializers, paginators
 from rest_framework.decorators import action
@@ -31,32 +27,6 @@ def get_khoa_video(request, year, month, filename):
         return response
     else:
         return HttpResponse('Video not found', status=404)
-
-def khoa_detail(request, id):
-    khoa = get_object_or_404(Khoa, id=id)
-    all_scores = Diem_Khoa.objects.filter(khoa=khoa).order_by('-year')
-    return render(request, 'khoa_detail.html', {'khoa': khoa, 'all_scores': all_scores})
-
-def get_5years_diem(request, id):
-    khoa = get_object_or_404(Khoa, id=id)
-    latest_scores = khoa.get_latest_scores(years=5)
-    return render(request, 'khoa_scores_5years.html', {'latest_scores': latest_scores, 'khoa': khoa})
-
-def get_latest_scores(request):
-    current_year = datetime.date.today().year
-    previous_year = current_year - 1
-    previous_year1 = previous_year -1
-    previous_year2 = previous_year1 -1
-    previous_year3 = previous_year2 - 1
-    khoa_scores = []
-    all_khoa = Khoa.objects.all()
-    for khoa in all_khoa:
-        latest_scores = Diem_Khoa.objects.filter(khoa=khoa).order_by('-year')[:5]
-        latest_scores = sorted(latest_scores, key=attrgetter('year'), reverse=True)
-        khoa_scores.append({'khoa': khoa, 'latest_scores': latest_scores})
-
-    return render(request, 'all_khoa_scores_5years.html', {'khoa_scores': khoa_scores,
-            'current_year': current_year, 'previous_year': previous_year, 'previous_year1': previous_year1, 'previous_year2': previous_year2, 'previous_year3': previous_year3})
 
 # ViewSets
 class KhoaViewSet(viewsets.ViewSet, generics.ListAPIView):
@@ -375,6 +345,68 @@ class ThiSinhViewSet(viewsets.ViewSet, generics.ListAPIView):
 
         return Response(serializers.UserSerializer(u, many=True).data, status.HTTP_200_OK)
 
+class AdminViewSet(viewsets.ViewSet, generics.ListAPIView):
+    queryset = Admin.objects.all()
+    serializer_class = serializers.AdminSerializer
+    pagination_class = paginators.ItemPaginator
+
+    def retrieve(self, request, pk=None):
+        try:
+            admin = Admin.objects.get(pk=pk)
+            serializer = serializers.AdminDetailSerializer(admin)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Admin.DoesNotExist:
+            return Response({"detail": "Admin not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def destroy(self, request, pk=None):
+        try:
+            admin = Admin.objects.get(pk=pk)
+            admin.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Admin.DoesNotExist:
+            return Response({"detail": "Admin not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def update(self, request, pk=None):
+        try:
+            admin = Admin.objects.get(pk=pk)
+        except Admin.DoesNotExist:
+            return Response({"detail": "Admin not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = serializers.AdminSerializer(admin, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def partial_update(self, request, pk=None):
+        try:
+            admin = Admin.objects.get(pk=pk)
+        except Admin.DoesNotExist:
+            return Response({"detail": "Admin not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = serializers.AdminSerializer(admin, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def create(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(methods=['get'], url_path='user', detail=True)
+    def get_user(self, request, pk):
+        u = User.objects.filter(admin_profile=pk)
+
+        q = request.query_params.get('q')
+        if q:
+            u = u.filter(username__icontains=q)
+
+        return Response(serializers.UserSerializer(u, many=True).data, status.HTTP_200_OK)
+
 class TuVanVienViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = TuVanVien.objects.all()
     serializer_class = serializers.TuVanVienSerializer
@@ -460,7 +492,6 @@ class TuVanVienViewSet(viewsets.ViewSet, generics.ListAPIView):
 
         return Response(serializers.KhoaSerializer(k, many=True).data, status.HTTP_200_OK)
 
-<<<<<<< HEAD
 class BinhLuanViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = BinhLuan.objects.all()
     serializer_class = serializers.BinhLuanSerializer
@@ -483,35 +514,6 @@ class BinhLuanViewSet(viewsets.ViewSet, generics.ListAPIView):
         except BinhLuan.DoesNotExist:
             return Response({"detail": "BinhLuan not found."}, status=status.HTTP_404_NOT_FOUND)
 
-=======
-class BannerViewSet(viewsets.ViewSet, generics.ListAPIView):
-    queryset = Banner.objects.all()
-    serializer_class = BannerSerializer
-
-    @swagger_auto_schema(responses={200: BannerSerializer(many=True)})
-    def list(self, request):
-        serializer = self.serializer_class(self.queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(responses={200: BannerSerializer()})
-    def retrieve(self, request, pk=None):
-        try:
-            banner = Banner.objects.get(pk=pk)
-            serializer = self.serializer_class(banner)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Banner.DoesNotExist:
-            return Response({"detail": "Banner not found."}, status=status.HTTP_404_NOT_FOUND)
-
-    @swagger_auto_schema(request_body=BannerSerializer, responses={201: BannerSerializer()})
->>>>>>> d2ce1d01d53dbeea4f3ff6a5c779a579d1182ad5
-    def create(self, request):
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-<<<<<<< HEAD
     def destroy(self, request, pk=None):
         try:
             bl = BinhLuan.objects.get(pk=pk)
@@ -543,7 +545,53 @@ class BannerViewSet(viewsets.ViewSet, generics.ListAPIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-=======
+
+    @action(methods=['get'], url_path='tintuc', detail=True)
+    def get_tintuc(self, request, pk):
+        tt = TinTuc.objects.filter(pk=pk)
+
+        q = request.query_params.get('q')
+        if q:
+            tt = tt.filter(name__icontains=q)
+
+        return Response(serializers.TinTucSerializer(tt, many=True).data, status.HTTP_200_OK)
+
+    @action(methods=['get'], url_path='user', detail=True)
+    def get_user(self, request, pk):
+        u = User.objects.filter(pk=pk)
+
+        q = request.query_params.get('q')
+        if q:
+            u = u.filter(username__icontains=q)
+
+        return Response(serializers.UserSerializer(u, many=True).data, status.HTTP_200_OK)
+
+class BannerViewSet(viewsets.ViewSet, generics.ListAPIView):
+    queryset = Banner.objects.all()
+    serializer_class = BannerSerializer
+
+    @swagger_auto_schema(responses={200: BannerSerializer(many=True)})
+    def list(self, request):
+        serializer = self.serializer_class(self.queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(responses={200: BannerSerializer()})
+    def retrieve(self, request, pk=None):
+        try:
+            banner = Banner.objects.get(pk=pk)
+            serializer = self.serializer_class(banner)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Banner.DoesNotExist:
+            return Response({"detail": "Banner not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(request_body=BannerSerializer, responses={201: BannerSerializer()})
+    def create(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     @swagger_auto_schema(request_body=BannerSerializer, responses={200: BannerSerializer()})
     def update(self, request, pk=None):
         try:
@@ -724,4 +772,3 @@ class TuyenSinhViewSet(viewsets.ViewSet, generics.ListAPIView):
             khoa = khoa.filter(name__icontains=q)
 
         return Response(KhoaSerializer(khoa, many=True).data, status=status.HTTP_200_OK)
->>>>>>> d2ce1d01d53dbeea4f3ff6a5c779a579d1182ad5

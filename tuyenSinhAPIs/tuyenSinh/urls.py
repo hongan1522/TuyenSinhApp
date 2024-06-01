@@ -32,6 +32,7 @@ r.register('tintuc', views.TinTucViewSet)
 r.register('banner', views.BannerViewSet)
 r.register('user', views.UserViewSet, 'User')
 r.register('binhluan', views.BinhLuanViewSet, 'Bình luận')
+r.register('Admin', views.AdminViewSet, 'Admin')
 
 urlpatterns = [
     path('', include(r.urls)),

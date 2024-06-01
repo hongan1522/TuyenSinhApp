@@ -133,6 +133,21 @@ class ThiSinhForm(forms.ModelForm):
                 raise ValidationError("User is already assigned to another role.")
         return user
 
+class AdminAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'username', 'email']
+    ordering = ['user']
+    search_fields = ['id']
+
+    def username(self, obj):
+        return obj.user.username
+
+    def email(self, obj):
+        return obj.user.email
+
+    class Media:
+        css = {
+            'all': ['/static/css/style.css']
+        }
 
 class ThiSinhAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'formatted_birthday', 'email']
@@ -144,7 +159,6 @@ class ThiSinhAdmin(admin.ModelAdmin):
         css = {
             'all': ['/static/css/style.css']
         }
-
 
 class TuVanVienForm(forms.ModelForm):
     class Meta:
@@ -172,8 +186,6 @@ class TVVAdmin(admin.ModelAdmin):
             'all': ['/static/css/style.css']
         }
 
-
-<<<<<<< HEAD
 class BinhLuanForm(forms.ModelForm):
     content = forms.CharField(widget=CKEditorUploadingWidget)
 
@@ -186,7 +198,7 @@ class BinhLuanAdmin(admin.ModelAdmin):
     search_fields = ['tintuc']
     ordering = ['id']
     form = BinhLuanForm
-=======
+
 class BannerAdmin(admin.ModelAdmin):
     list_display = ['id', 'image_preview']
     ordering = ['id']
@@ -200,27 +212,25 @@ class BannerAdmin(admin.ModelAdmin):
         return 'No Image'
 
     image_preview.short_description = 'Image Preview'
->>>>>>> d2ce1d01d53dbeea4f3ff6a5c779a579d1182ad5
 
     class Media:
         css = {
             'all': ['/static/css/style.css']
         }
 
-<<<<<<< HEAD
-admin.site.register(Khoa, KhoaAdmin)
-admin.site.register(Diem, DiemAdmin)
-admin.site.register(Diem_Khoa, Diem_KhoaAdmin)
-admin.site.register(ThiSinh, ThiSinhAdmin)
-admin.site.register(TuVanVien, TVVAdmin)
-admin.site.register(BinhLuan, BinhLuanAdmin)
-=======
+class TinTucForm(forms.ModelForm):
+    content = forms.CharField(widget=CKEditorUploadingWidget)
+
+    class Meta:
+        model = TinTuc
+        fields = '__all__'
 
 class TinTucAdmin(admin.ModelAdmin):
     list_display = ('name', 'created_date', 'active', 'tuyenSinh')
     search_fields = ('name', 'content')
     list_filter = ('created_date', 'active')
     ordering = ('-created_date',)
+    form = TinTucForm
 
     def tuyenSinh(self, obj):
         return obj.tuyenSinh
@@ -231,12 +241,19 @@ class TinTucAdmin(admin.ModelAdmin):
             'all': ['/static/css/style.css']
         }
 
+class TuyenSinhForm(forms.ModelForm):
+    introduction = forms.CharField(widget=CKEditorUploadingWidget)
+
+    class Meta:
+        model = TuyenSinh
+        fields = '__all__'
 
 class TuyenSinhAdmin(admin.ModelAdmin):
     list_display = ('type', 'khoa', 'start_date', 'end_date')
     search_fields = ('khoa__name', 'introduction')
     list_filter = ('type', 'start_date', 'end_date')
     ordering = ('-start_date',)
+    form = TuyenSinhForm
 
     def type(self, obj):
         return obj.get_type_display()
@@ -256,4 +273,5 @@ admin_site.register(TuVanVien, TVVAdmin)
 admin_site.register(TinTuc, TinTucAdmin)
 admin_site.register(TuyenSinh, TuyenSinhAdmin)
 admin_site.register(Banner, BannerAdmin)
->>>>>>> d2ce1d01d53dbeea4f3ff6a5c779a579d1182ad5
+admin_site.register(BinhLuan, BinhLuanAdmin)
+admin_site.register(Admin, AdminAdmin)

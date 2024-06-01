@@ -83,7 +83,7 @@ class User(AbstractUser):
         return self.username
 
 class Admin(models.Model):
-    user = models.OneToOneField(User, on_delete=models.PROTECT, related_name='admin_profile', primary_key=True)
+    user = models.OneToOneField(User, on_delete=models.PROTECT, related_name='admin_profile')
 
     def __str__(self):
         return self.user.username
@@ -174,15 +174,14 @@ class TuyenSinh(models.Model):
     type = models.IntegerField(default=ChinhQuy, choices=TYPE_CHOICES)
     start_date = models.DateField()
     end_date = models.DateField()
-    introduction = models.TextField()
+    introduction = RichTextField()
     khoa = models.ForeignKey(Khoa, on_delete=models.PROTECT)
     diem = models.ForeignKey(Diem, on_delete=models.PROTECT)
 
-<<<<<<< HEAD
     class Meta:
         verbose_name = 'Tuyển sinh'
         verbose_name_plural = 'Tuyển sinh'
-=======
+
     def clean(self):
         super().clean()
         if self.start_date is not None and self.end_date is not None:
@@ -194,14 +193,13 @@ class TuyenSinh(models.Model):
             # Ensure the end_date is at least 15 days later than the start_date
             if (self.end_date - self.start_date).days < 15:
                 raise ValidationError('The end date must be at least 15 days later than the start date.')
->>>>>>> d2ce1d01d53dbeea4f3ff6a5c779a579d1182ad5
 
     def __str__(self):
         return f"{self.get_type_display()} - {self.khoa.name}"
 
 class TinTuc(BaseModel):
     name = models.CharField(max_length=50)
-    content = models.TextField()
+    content = RichTextField()
     tuyenSinh = models.ForeignKey(TuyenSinh, on_delete=models.PROTECT)
 
     class Meta:
