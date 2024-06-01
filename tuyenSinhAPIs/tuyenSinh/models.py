@@ -154,7 +154,7 @@ class Banner(BaseModel):
     image = models.ImageField(upload_to='banner/%Y/%m/', null=False)
 
     def __str__(self):
-        return self.image
+        return self.image.name if self.image else 'No image'
 
 class TuyenSinh(models.Model):
     ChinhQuy = 0
@@ -177,6 +177,18 @@ class TuyenSinh(models.Model):
     introduction = models.TextField()
     khoa = models.ForeignKey(Khoa, on_delete=models.PROTECT)
     diem = models.ForeignKey(Diem, on_delete=models.PROTECT)
+
+    def clean(self):
+        super().clean()
+        if self.start_date is not None and self.end_date is not None:
+            # Ensure the end_date is no later than 3 months after the start_date
+            max_end_date = self.start_date + relativedelta(months=3)
+            if self.end_date > max_end_date:
+                raise ValidationError('The end date must be within 3 months of the start date.')
+
+            # Ensure the end_date is at least 15 days later than the start_date
+            if (self.end_date - self.start_date).days < 15:
+                raise ValidationError('The end date must be at least 15 days later than the start date.')
 
     def __str__(self):
         return f"{self.get_type_display()} - {self.khoa.name}"

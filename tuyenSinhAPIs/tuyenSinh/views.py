@@ -1,17 +1,21 @@
 from operator import attrgetter
 
 from django.utils import timezone
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, generics, status, parsers
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.conf import settings
-from tuyenSinh.models import Khoa, Diem, Diem_Khoa, ThiSinh, TuVanVien, User
+from tuyenSinh.models import Khoa, Diem, Diem_Khoa, ThiSinh, TuVanVien, User, TuyenSinh, TinTuc, Banner
 from django.shortcuts import render
 from tuyenSinh import serializers, paginators
 from rest_framework.decorators import action
 from rest_framework.response import Response
 import datetime
 import os
+
+from tuyenSinh.serializers import TuyenSinhSerializer, TinTucSerializer, BannerSerializer, KhoaSerializer
+
 
 def get_khoa_video(request, year, month, filename):
     video_path = os.path.join('khoa', 'video', year, month, filename)
@@ -451,3 +455,210 @@ class TuVanVienViewSet(viewsets.ViewSet, generics.ListAPIView):
             k = k.filter(name__icontains=q)
 
         return Response(serializers.KhoaSerializer(k, many=True).data, status.HTTP_200_OK)
+
+class BannerViewSet(viewsets.ViewSet, generics.ListAPIView):
+    queryset = Banner.objects.all()
+    serializer_class = BannerSerializer
+
+    @swagger_auto_schema(responses={200: BannerSerializer(many=True)})
+    def list(self, request):
+        serializer = self.serializer_class(self.queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(responses={200: BannerSerializer()})
+    def retrieve(self, request, pk=None):
+        try:
+            banner = Banner.objects.get(pk=pk)
+            serializer = self.serializer_class(banner)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Banner.DoesNotExist:
+            return Response({"detail": "Banner not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(request_body=BannerSerializer, responses={201: BannerSerializer()})
+    def create(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(request_body=BannerSerializer, responses={200: BannerSerializer()})
+    def update(self, request, pk=None):
+        try:
+            banner = Banner.objects.get(pk=pk)
+            serializer = self.serializer_class(banner, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Banner.DoesNotExist:
+            return Response({"detail": "Banner not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(request_body=BannerSerializer, responses={200: BannerSerializer()})
+    def partial_update(self, request, pk=None):
+        try:
+            banner = Banner.objects.get(pk=pk)
+            serializer = self.serializer_class(banner, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Banner.DoesNotExist:
+            return Response({"detail": "Banner not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(responses={204: 'No Content'})
+    def destroy(self, request, pk=None):
+        try:
+            banner = Banner.objects.get(pk=pk)
+            banner.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Banner.DoesNotExist:
+            return Response({"detail": "Banner not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(methods=['get'], url_path='related', detail=True)
+    def get_related(self, request, pk=None):
+        # Define the logic for getting related objects for Banner if any
+        banner = self.get_object()
+        # Example: Assuming there's a related field 'tintuc' in Banner model
+        related_objects = banner.tintuc_set.all()
+        serializer = TinTucSerializer(related_objects, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class TinTucViewSet(viewsets.ViewSet, generics.ListAPIView):
+    queryset = TinTuc.objects.all()
+    serializer_class = TinTucSerializer
+
+    @swagger_auto_schema(responses={200: TinTucSerializer(many=True)})
+    def list(self, request):
+        serializer = self.serializer_class(self.queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(responses={200: TinTucSerializer()})
+    def retrieve(self, request, pk=None):
+        try:
+            tintuc = TinTuc.objects.get(pk=pk)
+            serializer = self.serializer_class(tintuc)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except TinTuc.DoesNotExist:
+            return Response({"detail": "TinTuc not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(request_body=TinTucSerializer, responses={201: TinTucSerializer()})
+    def create(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(request_body=TinTucSerializer, responses={200: TinTucSerializer()})
+    def update(self, request, pk=None):
+        try:
+            tintuc = TinTuc.objects.get(pk=pk)
+            serializer = self.serializer_class(tintuc, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except TinTuc.DoesNotExist:
+            return Response({"detail": "TinTuc not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(request_body=TinTucSerializer, responses={200: TinTucSerializer()})
+    def partial_update(self, request, pk=None):
+        try:
+            tintuc = TinTuc.objects.get(pk=pk)
+            serializer = self.serializer_class(tintuc, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except TinTuc.DoesNotExist:
+            return Response({"detail": "TinTuc not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(responses={204: 'No Content'})
+    def destroy(self, request, pk=None):
+        try:
+            tintuc = TinTuc.objects.get(pk=pk)
+            tintuc.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except TinTuc.DoesNotExist:
+            return Response({"detail": "TinTuc not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(methods=['get'], url_path='tuyen-sinh', detail=True)
+    def get_tuyen_sinh(self, request, pk=None):
+        tin_tuc = self.get_object()
+        tuyen_sinh = TuyenSinh.objects.filter(tintuc=tin_tuc)
+
+        q = request.query_params.get('q')
+        if q:
+            tuyen_sinh = tuyen_sinh.filter(introduction__icontains=q)
+
+        return Response(TuyenSinhSerializer(tuyen_sinh, many=True).data, status=status.HTTP_200_OK)
+class TuyenSinhViewSet(viewsets.ViewSet, generics.ListAPIView):
+    queryset = TuyenSinh.objects.all()
+    serializer_class = TuyenSinhSerializer
+
+    @swagger_auto_schema(responses={200: TuyenSinhSerializer(many=True)})
+    def list(self, request):
+        serializer = self.serializer_class(self.queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(responses={200: TuyenSinhSerializer()})
+    def retrieve(self, request, pk=None):
+        try:
+            tuyensinh = TuyenSinh.objects.get(pk=pk)
+            serializer = self.serializer_class(tuyensinh)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except TuyenSinh.DoesNotExist:
+            return Response({"detail": "TuyenSinh not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(request_body=TuyenSinhSerializer, responses={201: TuyenSinhSerializer()})
+    def create(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(request_body=TuyenSinhSerializer, responses={200: TuyenSinhSerializer()})
+    def update(self, request, pk=None):
+        try:
+            tuyensinh = TuyenSinh.objects.get(pk=pk)
+            serializer = self.serializer_class(tuyensinh, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except TuyenSinh.DoesNotExist:
+            return Response({"detail": "TuyenSinh not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(request_body=TuyenSinhSerializer, responses={200: TuyenSinhSerializer()})
+    def partial_update(self, request, pk=None):
+        try:
+            tuyensinh = TuyenSinh.objects.get(pk=pk)
+            serializer = self.serializer_class(tuyensinh, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except TuyenSinh.DoesNotExist:
+            return Response({"detail": "TuyenSinh not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(responses={204: 'No Content'})
+    def destroy(self, request, pk=None):
+        try:
+            tuyensinh = TuyenSinh.objects.get(pk=pk)
+            tuyensinh.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except TuyenSinh.DoesNotExist:
+            return Response({"detail": "TuyenSinh not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(methods=['get'], url_path='khoa', detail=True)
+    def get_khoa(self, request, pk=None):
+        tuyen_sinh = self.get_object()
+        khoa = Khoa.objects.filter(tuyensinh=tuyen_sinh)
+
+        q = request.query_params.get('q')
+        if q:
+            khoa = khoa.filter(name__icontains=q)
+
+        return Response(KhoaSerializer(khoa, many=True).data, status=status.HTTP_200_OK)

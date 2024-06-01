@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from  tuyenSinh.models import Khoa, Diem, Diem_Khoa, ThiSinh, TuVanVien, User
+from tuyenSinh.models import Khoa, Diem, Diem_Khoa, ThiSinh, TuVanVien, User, TuyenSinh, TinTuc, Banner
+
 
 class KhoaSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
@@ -63,6 +64,25 @@ class TuVanVienSerializer(serializers.ModelSerializer):
     class Meta:
         model = TuVanVien
         fields = ['id', 'name', 'birthday', 'gender', 'email', 'khoa', 'user']
+
+
+class TuyenSinhSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TuyenSinh
+        fields = ['id', 'type', 'start_date', 'end_date', 'introduction', 'khoa', 'diem']
+
+
+class TinTucSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TinTuc
+        fields = ['id', 'name', 'content', 'tuyenSinh', 'created_date', 'updates_date', 'active']
+
+
+class BannerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Banner
+        fields = ['id', 'image', 'created_date', 'updates_date', 'active']
+
 
 # DetailSerializers
 class KhoaDetailSerializer(KhoaSerializer):

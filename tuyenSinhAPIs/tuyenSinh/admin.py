@@ -1,11 +1,55 @@
 from django.contrib import admin
+from django.contrib.admin import AdminSite
 from django.core.exceptions import ValidationError
+from django.template.response import TemplateResponse
+from django.urls import path
 
 from tuyenSinh.models import Khoa, Diem, ThiSinh, TuyenSinh, TinTuc, BinhLuan, Banner, Diem_Khoa, TuVanVien, User, Admin
 from django.utils.html import mark_safe, format_html
 from django import forms
 from ckeditor_uploader.widgets import CKEditorUploadingWidget
 from tuyenSinh.models import Khoa
+
+
+# Custom AdminSite
+class TuyenSinhAdminSite(AdminSite):
+    site_header = "TuyenSinh Administration"
+    site_title = "TuyenSinh Admin Portal"
+    index_title = "Welcome to TuyenSinh Administration"
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('statistics/', self.admin_view(self.statistics_view), name='statistics'),
+        ]
+        return custom_urls + urls
+
+    def statistics_view(self, request):
+        # Example logic to gather statistics
+        total_khoa = Khoa.objects.count()
+        total_diem = Diem.objects.count()
+        total_thisinh = ThiSinh.objects.count()
+        total_tuvanvien = TuVanVien.objects.count()
+        total_banner = Banner.objects.count()
+        total_tintuc = TinTuc.objects.count()
+        total_tuyensinh = TuyenSinh.objects.count()
+
+        context = dict(
+            self.each_context(request),
+            title="Statistics",
+            total_khoa=total_khoa,
+            total_diem=total_diem,
+            total_thisinh=total_thisinh,
+            total_tuvanvien=total_tuvanvien,
+            total_banner=total_banner,
+            total_tintuc=total_tintuc,
+            total_tuyensinh=total_tuyensinh,
+        )
+        return TemplateResponse(request, 'admin/statistics.html', context)
+
+
+admin_site = TuyenSinhAdminSite(name='tuyensinh_admin')
+
 
 class KhoaForm(forms.ModelForm):
     program_description = forms.CharField(widget=CKEditorUploadingWidget)
@@ -14,6 +58,7 @@ class KhoaForm(forms.ModelForm):
     class Meta:
         model = Khoa
         fields = '__all__'
+
 
 class KhoaAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'display_website']
@@ -27,7 +72,7 @@ class KhoaAdmin(admin.ModelAdmin):
         if obj.video:
             try:
                 video_url = obj.video.url
-                return mark_safe(f'<video width="450" height=300" controls><source src="{video_url}" type="video/mp4"></video>')
+                return mark_safe(f'<video width="450" height="300" controls><source src="{video_url}" type="video/mp4"></video>')
             except Exception as e:
                 return f'Error: {e}'
         else:
@@ -51,6 +96,7 @@ class KhoaAdmin(admin.ModelAdmin):
             'all': ['/static/css/style.css']
         }
 
+
 class DiemAdmin(admin.ModelAdmin):
     list_display = ['id', 'value']
     search_fields = ['value']
@@ -61,6 +107,7 @@ class DiemAdmin(admin.ModelAdmin):
             'all': ['/static/css/style.css']
         }
 
+
 class Diem_KhoaAdmin(admin.ModelAdmin):
     list_display = ['id', 'khoa', 'diem', 'year']
     search_fields = ['khoa']
@@ -70,6 +117,7 @@ class Diem_KhoaAdmin(admin.ModelAdmin):
         css = {
             'all': ['/static/css/style.css']
         }
+
 
 class ThiSinhForm(forms.ModelForm):
     class Meta:
@@ -85,6 +133,7 @@ class ThiSinhForm(forms.ModelForm):
                 raise ValidationError("User is already assigned to another role.")
         return user
 
+
 class ThiSinhAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'formatted_birthday', 'email']
     search_fields = ['name']
@@ -95,6 +144,7 @@ class ThiSinhAdmin(admin.ModelAdmin):
         css = {
             'all': ['/static/css/style.css']
         }
+
 
 class TuVanVienForm(forms.ModelForm):
     class Meta:
@@ -110,6 +160,7 @@ class TuVanVienForm(forms.ModelForm):
                 raise ValidationError("User is already assigned to another role.")
         return user
 
+
 class TVVAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'khoa', 'formatted_birthday', 'email']
     search_fields = ['name', 'khoa']
@@ -121,8 +172,64 @@ class TVVAdmin(admin.ModelAdmin):
             'all': ['/static/css/style.css']
         }
 
-admin.site.register(Khoa, KhoaAdmin)
-admin.site.register(Diem, DiemAdmin)
-admin.site.register(Diem_Khoa, Diem_KhoaAdmin)
-admin.site.register(ThiSinh, ThiSinhAdmin)
-admin.site.register(TuVanVien, TVVAdmin)
+
+class BannerAdmin(admin.ModelAdmin):
+    list_display = ['id', 'image_preview']
+    ordering = ['id']
+
+    def image_preview(self, banner):
+        if banner:
+            return mark_safe(
+                '<img src="/static/{url}" width="120" />' \
+                    .format(url=banner.image.name)
+            )
+        return 'No Image'
+
+    image_preview.short_description = 'Image Preview'
+
+    class Media:
+        css = {
+            'all': ['/static/css/style.css']
+        }
+
+
+class TinTucAdmin(admin.ModelAdmin):
+    list_display = ('name', 'created_date', 'active', 'tuyenSinh')
+    search_fields = ('name', 'content')
+    list_filter = ('created_date', 'active')
+    ordering = ('-created_date',)
+
+    def tuyenSinh(self, obj):
+        return obj.tuyenSinh
+    tuyenSinh.short_description = 'TuyenSinh'
+
+    class Media:
+        css = {
+            'all': ['/static/css/style.css']
+        }
+
+
+class TuyenSinhAdmin(admin.ModelAdmin):
+    list_display = ('type', 'khoa', 'start_date', 'end_date')
+    search_fields = ('khoa__name', 'introduction')
+    list_filter = ('type', 'start_date', 'end_date')
+    ordering = ('-start_date',)
+
+    def type(self, obj):
+        return obj.get_type_display()
+    type.short_description = 'Type'
+
+    class Media:
+        css = {
+            'all': ['/static/css/style.css']
+        }
+
+
+admin_site.register(Khoa, KhoaAdmin)
+admin_site.register(Diem, DiemAdmin)
+admin_site.register(Diem_Khoa, Diem_KhoaAdmin)
+admin_site.register(ThiSinh, ThiSinhAdmin)
+admin_site.register(TuVanVien, TVVAdmin)
+admin_site.register(TinTuc, TinTucAdmin)
+admin_site.register(TuyenSinh, TuyenSinhAdmin)
+admin_site.register(Banner, BannerAdmin)
