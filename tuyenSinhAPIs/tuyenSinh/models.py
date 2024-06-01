@@ -178,6 +178,10 @@ class TuyenSinh(models.Model):
     khoa = models.ForeignKey(Khoa, on_delete=models.PROTECT)
     diem = models.ForeignKey(Diem, on_delete=models.PROTECT)
 
+    class Meta:
+        verbose_name = 'Tuyển sinh'
+        verbose_name_plural = 'Tuyển sinh'
+
     def __str__(self):
         return f"{self.get_type_display()} - {self.khoa.name}"
 
@@ -186,15 +190,34 @@ class TinTuc(BaseModel):
     content = models.TextField()
     tuyenSinh = models.ForeignKey(TuyenSinh, on_delete=models.PROTECT)
 
+    class Meta:
+        verbose_name = 'Tin tức'
+        verbose_name_plural = 'Tin tức'
+
     def __str__(self):
         return self.name
 
-class BinhLuan(BaseModel):
-    content = models.TextField();
-    userID = models.ForeignKey(User, on_delete=models.PROTECT)
+class Interation(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    tintuc = models.ForeignKey(TinTuc, on_delete=models.CASCADE)
+
+    class Meta:
+        abstract = True
+
+class BinhLuan(Interation):
+    content = RichTextField()
+
+    class Meta:
+        verbose_name = 'Bình luận'
+        verbose_name_plural = 'Bình luận'
 
     def __str__(self):
         return self.content
+
+class Like(Interation):
+    class Meta:
+        unique_together = ('tintuc', 'user')
+
 
 
 

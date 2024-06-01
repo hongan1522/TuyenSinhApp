@@ -5,7 +5,7 @@ from rest_framework import viewsets, generics, status, parsers
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.conf import settings
-from tuyenSinh.models import Khoa, Diem, Diem_Khoa, ThiSinh, TuVanVien, User
+from tuyenSinh.models import Khoa, Diem, Diem_Khoa, ThiSinh, TuVanVien, User, BinhLuan
 from django.shortcuts import render
 from tuyenSinh import serializers, paginators
 from rest_framework.decorators import action
@@ -451,3 +451,64 @@ class TuVanVienViewSet(viewsets.ViewSet, generics.ListAPIView):
             k = k.filter(name__icontains=q)
 
         return Response(serializers.KhoaSerializer(k, many=True).data, status.HTTP_200_OK)
+
+class BinhLuanViewSet(viewsets.ViewSet, generics.ListAPIView):
+    queryset = BinhLuan.objects.all()
+    serializer_class = serializers.BinhLuanSerializer
+    pagination_class = paginators.ItemPaginator
+
+    def get_queryset(self):
+        queryset = self.queryset
+
+        tintuc = self.request.query_params.get('tintuc_id')
+        if tintuc:
+            queryset = queryset.filter(tintuc_id=tintuc)
+
+        return queryset
+
+    def retrieve(self, request, pk=None):
+        try:
+            bl = BinhLuan.objects.get(pk=pk)
+            serializer = serializers.BinhLuanDetailSerializer(bl)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except BinhLuan.DoesNotExist:
+            return Response({"detail": "BinhLuan not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def create(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, pk=None):
+        try:
+            bl = BinhLuan.objects.get(pk=pk)
+            bl.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except BinhLuan.DoesNotExist:
+            return Response({"detail": "BinhLuan not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def update(self, request, pk=None):
+        try:
+            bl = BinhLuan.objects.get(pk=pk)
+        except BinhLuan.DoesNotExist:
+            return Response({"detail": "BinhLuan not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = serializers.BinhLuanSerializer(bl, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def partial_update(self, request, pk=None):
+        try:
+            bl = BinhLuan.objects.get(pk=pk)
+        except BinhLuan.DoesNotExist:
+            return Response({"detail": "BinhLuan not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = serializers.BinhLuanSerializer(bl, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -121,8 +121,28 @@ class TVVAdmin(admin.ModelAdmin):
             'all': ['/static/css/style.css']
         }
 
+
+class BinhLuanForm(forms.ModelForm):
+    content = forms.CharField(widget=CKEditorUploadingWidget)
+
+    class Meta:
+        model = Khoa
+        fields = '__all__'
+
+class BinhLuanAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'tintuc']
+    search_fields = ['tintuc']
+    ordering = ['id']
+    form = BinhLuanForm
+
+    class Media:
+        css = {
+            'all': ['/static/css/style.css']
+        }
+
 admin.site.register(Khoa, KhoaAdmin)
 admin.site.register(Diem, DiemAdmin)
 admin.site.register(Diem_Khoa, Diem_KhoaAdmin)
 admin.site.register(ThiSinh, ThiSinhAdmin)
 admin.site.register(TuVanVien, TVVAdmin)
+admin.site.register(BinhLuan, BinhLuanAdmin)

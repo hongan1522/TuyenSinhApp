@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from  tuyenSinh.models import Khoa, Diem, Diem_Khoa, ThiSinh, TuVanVien, User
+from  tuyenSinh.models import Khoa, Diem, Diem_Khoa, ThiSinh, TuVanVien, User, BinhLuan
 
 class KhoaSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
@@ -44,6 +44,13 @@ class UserSerializer(serializers.ModelSerializer):
 
         return instance
 
+    def to_representation(self, instance):
+        req = super().to_representation(instance)
+        avatar = instance.avatar
+        if avatar:
+            req['avatar'] = avatar.url
+        return req
+
     class Meta:
         model = User
         fields = ['id', 'first_name', 'last_name', 'username', 'password', 'email', 'avatar']
@@ -59,10 +66,14 @@ class ThiSinhSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class TuVanVienSerializer(serializers.ModelSerializer):
-    # user = UserSerializer()
     class Meta:
         model = TuVanVien
         fields = ['id', 'name', 'birthday', 'gender', 'email', 'khoa', 'user']
+
+class BinhLuanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BinhLuan
+        fields = ['id', 'user', 'tintuc']
 
 # DetailSerializers
 class KhoaDetailSerializer(KhoaSerializer):
@@ -77,6 +88,13 @@ class DiemKhoaDetailSerializer(DiemKhoaSerializer):
     class Meta:
         model = DiemKhoaSerializer.Meta.model
         fields = DiemKhoaSerializer.Meta.fields + ['diem', 'khoa']
+
+class BinhLuanDetailSerializer(BinhLuanSerializer):
+    user = UserSerializer()
+    # tintuc = TinTucSerializer()
+    class Meta:
+        model = BinhLuanSerializer.Meta.model
+        fields = BinhLuanSerializer.Meta.fields + ['user', 'content']
 
 class TuVanVienDetailSerializer(ThiSinhSerializer):
     khoa = KhoaSerializer()
