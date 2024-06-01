@@ -1,5 +1,10 @@
 from rest_framework import serializers
+<<<<<<< HEAD
 from  tuyenSinh.models import Khoa, Diem, Diem_Khoa, ThiSinh, TuVanVien, User, BinhLuan
+=======
+from tuyenSinh.models import Khoa, Diem, Diem_Khoa, ThiSinh, TuVanVien, User, TuyenSinh, TinTuc, Banner
+
+>>>>>>> d2ce1d01d53dbeea4f3ff6a5c779a579d1182ad5
 
 class KhoaSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
@@ -70,10 +75,31 @@ class TuVanVienSerializer(serializers.ModelSerializer):
         model = TuVanVien
         fields = ['id', 'name', 'birthday', 'gender', 'email', 'khoa', 'user']
 
+<<<<<<< HEAD
 class BinhLuanSerializer(serializers.ModelSerializer):
     class Meta:
         model = BinhLuan
         fields = ['id', 'user', 'tintuc']
+=======
+
+class TuyenSinhSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TuyenSinh
+        fields = ['id', 'type', 'start_date', 'end_date', 'introduction', 'khoa', 'diem']
+
+
+class TinTucSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TinTuc
+        fields = ['id', 'name', 'content', 'tuyenSinh', 'created_date', 'updates_date', 'active']
+
+
+class BannerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Banner
+        fields = ['id', 'image', 'created_date', 'updates_date', 'active']
+
+>>>>>>> d2ce1d01d53dbeea4f3ff6a5c779a579d1182ad5
 
 # DetailSerializers
 class KhoaDetailSerializer(KhoaSerializer):

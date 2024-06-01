@@ -21,6 +21,8 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
+from tuyenSinh.admin import admin_site
+
 schema_view = get_schema_view(
     openapi.Info(
         title="TuyenSinh API",
@@ -34,7 +36,7 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('admin/', admin_site.urls),
     path('', include('tuyenSinh.urls')),
     path('khoa/video/<str:year>/<str:month>/<str:filename>', views.get_khoa_video, name='videoKhoa'),
     # path('khoa/<int:id>/', views.khoa_detail, name='chiTietKhoa'),
