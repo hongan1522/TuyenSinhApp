@@ -1,14 +1,9 @@
-from operator import attrgetter
-
-from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets, generics, status, parsers
-from django.shortcuts import render, get_object_or_404
+from rest_framework import viewsets, generics, status, parsers, permissions
 from django.http import HttpResponse
 from django.conf import settings
-from tuyenSinh.models import Khoa, Diem, Diem_Khoa, ThiSinh, TuVanVien, User, TuyenSinh, TinTuc, Banner, BinhLuan, Admin
-from django.shortcuts import render
-from tuyenSinh import serializers, paginators
+from tuyenSinh.models import Khoa, Diem, Diem_Khoa, ThiSinh, TuVanVien, User, TuyenSinh, TinTuc, Banner, BinhLuan, Admin, Like
+from tuyenSinh import serializers, paginators, perms
 from rest_framework.decorators import action
 from rest_framework.response import Response
 import datetime
@@ -96,6 +91,12 @@ class KhoaViewSet(viewsets.ViewSet, generics.ListAPIView):
         try:
             diem_khoa = Diem_Khoa.objects.filter(khoa_id=pk).order_by('-year')
 
+            paginator = paginators.ItemPaginator()
+            page = paginator.paginate_queryset(diem_khoa, request)
+            if page is not None:
+                serializer = serializers.DiemKhoaSerializer(page, many=True)
+                return paginator.get_paginated_response(serializer.data)
+
             if diem_khoa.exists():
                 serializer = serializers.DiemKhoaSerializer(diem_khoa, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -127,6 +128,12 @@ class KhoaViewSet(viewsets.ViewSet, generics.ListAPIView):
         q = request.query_params.get('q')
         if q:
             tvv = tvv.filter(name__icontains=q)
+
+        paginator = paginators.ItemPaginator()
+        page = paginator.paginate_queryset(tvv, request)
+        if page is not None:
+            serializer = serializers.TuVanVienSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
 
         return Response(serializers.TuVanVienSerializer(tvv, many=True).data, status.HTTP_200_OK)
 
@@ -272,6 +279,25 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_permissions(self):
+        if self.action in ['current_user']:
+            return [permissions.IsAuthenticated()]
+
+        return [permissions.AllowAny()]
+
+    @action(methods=['get', 'patch'], url_path='', detail=False)
+    def current_user(self, request):
+        user = request.user
+        if request.method.__eq__('PATCH'):
+            for k, v in request.data.items():
+                if k == 'password':
+                    user.set_password(v)
+                else:
+                    setattr(user, k, v)
+            user.save()
+
+        return Response(serializers.UserSerializer(user).data)
 
 class ThiSinhViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = ThiSinh.objects.all()
@@ -514,9 +540,16 @@ class BinhLuanViewSet(viewsets.ViewSet, generics.ListAPIView):
         except BinhLuan.DoesNotExist:
             return Response({"detail": "BinhLuan not found."}, status=status.HTTP_404_NOT_FOUND)
 
+    def get_permissions(self):
+        if self.action in ['destroy', 'update']:
+            return [perms.BinhLuanOwner()]
+
+        return [permissions.AllowAny()]
+
     def destroy(self, request, pk=None):
         try:
             bl = BinhLuan.objects.get(pk=pk)
+            self.check_object_permissions(request, bl)
             bl.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except BinhLuan.DoesNotExist:
@@ -548,7 +581,7 @@ class BinhLuanViewSet(viewsets.ViewSet, generics.ListAPIView):
 
     @action(methods=['get'], url_path='tintuc', detail=True)
     def get_tintuc(self, request, pk):
-        tt = TinTuc.objects.filter(pk=pk)
+        tt = TinTuc.objects.filter(binhluan_id=pk)
 
         q = request.query_params.get('q')
         if q:
@@ -634,9 +667,21 @@ class BannerViewSet(viewsets.ViewSet, generics.ListAPIView):
         serializer = TinTucSerializer(related_objects, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-class TinTucViewSet(viewsets.ViewSet, generics.ListAPIView):
+class TinTucViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
     queryset = TinTuc.objects.all()
     serializer_class = TinTucSerializer
+
+    def get_permissions(self):
+        if self.action in ['add_binhluan', 'like']:
+            return [permissions.IsAuthenticated()]
+
+        return [permissions.AllowAny()]
+
+    def get_serializer_class(self):
+        if self.request.user.is_authenticated:
+            return serializers.AuthenticatedTinTucSerializer
+
+        return self.serializer_class
 
     @swagger_auto_schema(responses={200: TinTucSerializer(many=True)})
     def list(self, request):
@@ -647,7 +692,8 @@ class TinTucViewSet(viewsets.ViewSet, generics.ListAPIView):
     def retrieve(self, request, pk=None):
         try:
             tintuc = TinTuc.objects.get(pk=pk)
-            serializer = self.serializer_class(tintuc)
+            serializer_class = self.get_serializer_class()
+            serializer = serializer_class(tintuc, context={'request': request})
             return Response(serializer.data, status=status.HTTP_200_OK)
         except TinTuc.DoesNotExist:
             return Response({"detail": "TinTuc not found."}, status=status.HTTP_404_NOT_FOUND)
@@ -703,6 +749,36 @@ class TinTucViewSet(viewsets.ViewSet, generics.ListAPIView):
             tuyen_sinh = tuyen_sinh.filter(introduction__icontains=q)
 
         return Response(TuyenSinhSerializer(tuyen_sinh, many=True).data, status=status.HTTP_200_OK)
+
+    @action(methods=['get'], url_path='binhluan', detail=True)
+    def get_binhluan(self, request, pk):
+        bl = BinhLuan.objects.filter(tintuc_id=pk)
+
+        paginator = paginators.BinhLuanPaginator()
+        page = paginator.paginate_queryset(bl, request)
+        if page is not None:
+            serializer = serializers.BinhLuanSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
+        return Response(serializers.BinhLuanSerializer(bl, many=True).data, status.HTTP_200_OK)
+
+    @action(methods=['post'], url_path='binhluan', detail=True)
+    def add_binhluan(self, request, pk):
+        bl = self.get_object().binhluan_set.create(user=request.user, content=request.data.get('content'))
+
+        return Response(serializers.BinhLuanSerializer(bl).data, status=status.HTTP_201_CREATED)
+
+    @action(methods=['post'], url_path='like', detail=True)
+    def like(self, request, pk):
+        l, created = Like.objects.get_or_create(tintuc=self.get_object(), user=request.user)
+
+        if not created:
+            l.active = not l.active
+            l.save()
+
+        serializer = serializers.AuthenticatedTinTucSerializer(self.get_object(), context={'request': request})
+        return Response(serializer.data)
+
 class TuyenSinhViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = TuyenSinh.objects.all()
     serializer_class = TuyenSinhSerializer
@@ -766,6 +842,12 @@ class TuyenSinhViewSet(viewsets.ViewSet, generics.ListAPIView):
     def get_khoa(self, request, pk=None):
         tuyen_sinh = self.get_object()
         khoa = Khoa.objects.filter(tuyensinh=tuyen_sinh)
+
+        paginator = paginators.ItemPaginator()
+        page = paginator.paginate_queryset(khoa, request)
+        if page is not None:
+            serializer = serializers.KhoaSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
 
         q = request.query_params.get('q')
         if q:

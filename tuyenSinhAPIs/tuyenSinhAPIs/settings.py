@@ -30,7 +30,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -44,8 +43,15 @@ INSTALLED_APPS = [
     'ckeditor',
     'ckeditor_uploader',
     'rest_framework',
-    'drf_yasg'
+    'drf_yasg',
+    'oauth2_provider'
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+    )
+}
 
 CKEDITOR_UPLOAD_PATH = "ckeditors/images/"
 
@@ -87,7 +93,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'tuyenSinhAPIs.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
@@ -100,7 +105,6 @@ DATABASES = {
         'HOST': ''
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -120,7 +124,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -132,7 +135,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
@@ -142,3 +144,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CLIENT_ID = 'soLN7SSUg45Y5Jcw6VRCBXKwJfWxm7E0lLurIj7i'
+CLIENT_SECRET = 'fnB707woQfDI7xJVOupbEqT3GZKdm3B1Bcl81lQPgn1ZM9nr9I2BkYH87m8JrzQJ1ag0fWIn7IClMvP2Xfl86coaNn9u4zYRwlGUqG9RkhF2iJUbOvgFOyiRfePA8BLn'
