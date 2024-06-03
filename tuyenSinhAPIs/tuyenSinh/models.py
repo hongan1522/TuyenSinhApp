@@ -150,10 +150,10 @@ class ThiSinh(models.Model):
     def __str__(self):
         return self.user.username
 class Banner(BaseModel):
-    image = models.ImageField(upload_to='banner/%Y/%m/', null=False)
+    image = CloudinaryField('image', null=False)
 
     def __str__(self):
-        return self.image.name if self.image else 'No image'
+        return self.image.public_id if self.image else 'No image'
 
 class TuyenSinh(models.Model):
     ChinhQuy = 0
@@ -175,7 +175,7 @@ class TuyenSinh(models.Model):
     end_date = models.DateField()
     introduction = RichTextField()
     khoa = models.ForeignKey(Khoa, on_delete=models.PROTECT)
-    diem = models.ForeignKey(Diem, on_delete=models.PROTECT)
+    #diem = models.ForeignKey(Diem, on_delete=models.PROTECT)
 
     class Meta:
         verbose_name = 'Tuyển sinh'
@@ -194,7 +194,7 @@ class TuyenSinh(models.Model):
                 raise ValidationError('The end date must be at least 15 days later than the start date.')
 
     def __str__(self):
-        return f"{self.get_type_display()} - {self.khoa.name}"
+        return f"{self.get_type_display()} - {self.khoa.name} - Start Date: {self.start_date.strftime('%d/%m/%Y')} - End Date: {self.end_date.strftime('%d/%m/%Y')}"
 
 class TinTuc(BaseModel):
     name = models.CharField(max_length=50)

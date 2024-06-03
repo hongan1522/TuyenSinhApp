@@ -106,7 +106,7 @@ class AuthenticatedTinTucSerializer(TinTucSerializer):
 class BannerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Banner
-        fields = ['id', 'image', 'created_date', 'updates_date', 'active']
+        fields = ['id', 'image', 'created_date', 'updates_date',]
 
 # DetailSerializers
 class KhoaDetailSerializer(KhoaSerializer):

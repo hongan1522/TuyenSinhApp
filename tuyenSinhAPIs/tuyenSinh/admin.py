@@ -200,12 +200,13 @@ class BinhLuanAdmin(admin.ModelAdmin):
 class BannerAdmin(admin.ModelAdmin):
     list_display = ['id', 'image_preview']
     ordering = ['id']
+    exclude = ['active']
 
     def image_preview(self, banner):
-        if banner:
+        if banner.image:
             return mark_safe(
-                '<img src="/static/{url}" width="120" />' \
-                    .format(url=banner.image.name)
+                '<img src="{url}" width="120" />' \
+                    .format(url=banner.image.url)
             )
         return 'No Image'
 
@@ -247,7 +248,7 @@ class TuyenSinhForm(forms.ModelForm):
         fields = '__all__'
 
 class TuyenSinhAdmin(admin.ModelAdmin):
-    list_display = ('type', 'khoa', 'start_date', 'end_date')
+    list_display = ('type', 'khoa', 'formatted_start_date', 'formatted_end_date')  # Include the formatted date methods
     search_fields = ('khoa__name', 'introduction')
     list_filter = ('type', 'start_date', 'end_date')
     ordering = ('-start_date',)
@@ -261,6 +262,16 @@ class TuyenSinhAdmin(admin.ModelAdmin):
         css = {
             'all': ['/static/css/style.css']
         }
+
+    def formatted_start_date(self, obj):
+        return obj.start_date.strftime('%d/%m/%Y')
+
+    formatted_start_date.short_description = 'Start Date'
+
+    def formatted_end_date(self, obj):
+        return obj.end_date.strftime('%d/%m/%Y')
+
+    formatted_end_date.short_description = 'End Date'
 
 
 admin_site.register(Khoa, KhoaAdmin)
