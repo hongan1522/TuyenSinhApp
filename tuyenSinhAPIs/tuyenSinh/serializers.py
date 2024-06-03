@@ -78,7 +78,7 @@ class TuVanVienSerializer(serializers.ModelSerializer):
 class BinhLuanSerializer(serializers.ModelSerializer):
     class Meta:
         model = BinhLuan
-        fields = ['id', 'user', 'tintuc']
+        fields = ['id', 'user', 'tintuc', 'content', 'created_date']
 
 class TuyenSinhSerializer(serializers.ModelSerializer):
     class Meta:
@@ -91,6 +91,17 @@ class TinTucSerializer(serializers.ModelSerializer):
         model = TinTuc
         fields = ['id', 'name', 'content', 'tuyenSinh', 'created_date', 'updates_date', 'active']
 
+class AuthenticatedTinTucSerializer(TinTucSerializer):
+    liked = serializers.SerializerMethodField()
+
+    def get_liked(self, tintuc):
+        request = self.context.get('request')
+        if request:
+            return tintuc.like_set.filter(user=request.user, active=True).exists()
+
+    class Meta:
+        model = TinTucSerializer.Meta.model
+        fields = TinTucSerializer.Meta.fields + ['liked']
 
 class BannerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -116,7 +127,7 @@ class BinhLuanDetailSerializer(BinhLuanSerializer):
     tintuc = TinTucSerializer()
     class Meta:
         model = BinhLuanSerializer.Meta.model
-        fields = BinhLuanSerializer.Meta.fields + ['user', 'tintuc', 'content']
+        fields = BinhLuanSerializer.Meta.fields + ['user', 'tintuc']
 
 class AdminDetailSerializer(AdminSerializer):
     user = UserSerializer()
