@@ -83,7 +83,7 @@ class BinhLuanSerializer(serializers.ModelSerializer):
 class TuyenSinhSerializer(serializers.ModelSerializer):
     class Meta:
         model = TuyenSinh
-        fields = ['id', 'type', 'start_date', 'end_date', 'introduction', 'khoa', 'diem']
+        fields = ['id', 'type', 'start_date', 'end_date', 'introduction', 'khoa']
 
 
 class TinTucSerializer(serializers.ModelSerializer):
