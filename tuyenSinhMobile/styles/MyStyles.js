@@ -4,7 +4,7 @@ export default StyleSheet.create({
     container: {
         flex: 1,
         marginTop: 50
-    }, khoa: {
+    }, khoaStyle: {
         fontSize: 20,
         fontWeight: 'bold',
         color: 'darkblue'
