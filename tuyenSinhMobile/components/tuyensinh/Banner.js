@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, Image } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet, Image, TouchableOpacity } from 'react-native';
 
-const BannerComponent = () => {
+const BannerComponent = ({ onBannerLongPress }) => {
     const [bannerData, setBannerData] = useState([]); // Dữ liệu của banner từ API
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -17,7 +17,7 @@ const BannerComponent = () => {
             let id = 1;
             while (id <= maxId) {
                 // Gửi request API cho từng banner id
-                const response = await fetch(`https://feline-helped-safely.ngrok-free.app/banner/${id}`);
+                const response = await fetch(`https://neutral-blatantly-ghost.ngrok-free.app/banner/${id}`);
                 if (!response.ok) {
                     // Khi không còn dữ liệu nữa, thoát khỏi vòng lặp
                     break;
@@ -38,7 +38,7 @@ const BannerComponent = () => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.khoaStyle}>DANH MỤC KHOA</Text>
+            <Text style={styles.khoaStyle}>DANH MỤC BANNER</Text>
             {loading ? (
                 <ActivityIndicator />
             ) : error ? (
@@ -46,9 +46,13 @@ const BannerComponent = () => {
             ) : (
                 <View>
                     {bannerData.map((banner, index) => (
-                        <View key={index} style={styles.bannerItem}>
+                        <TouchableOpacity
+                            key={index}
+                            style={styles.bannerItem}
+                            onPress={() => onBannerLongPress && onBannerLongPress(banner.image)} // Sửa thành onPress và kiểm tra onBannerLongPress
+                        >
                             <Image source={{ uri: `https://res.cloudinary.com/dcxpivgx4/${banner.image}` }} style={styles.bannerImage} />
-                        </View>
+                        </TouchableOpacity>
                     ))}
                 </View>
             )}

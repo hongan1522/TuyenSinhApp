@@ -20,7 +20,6 @@ from tuyenSinh import views
 from rest_framework import routers
 from tuyenSinh import views
 
-
 r = routers.DefaultRouter()
 r.register('khoa', views.KhoaViewSet, 'Khoa')
 r.register('diem', views.DiemViewSet, 'Điểm')
