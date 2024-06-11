@@ -1,9 +1,10 @@
 import axios from "axios";
 
-const BASE_URL = 'http://192.168.1.15:8000/'; 
+const BASE_URL = 'https://feline-helped-safely.ngrok-free.app/'; 
 
 export const endpoints = {
-    'khoa': '/khoa/'
+    'khoa': '/khoa/',
+    'diemkhoa': '/diemkhoa/',
 };
 
 export default axios.create({ 

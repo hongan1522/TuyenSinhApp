@@ -1,10 +1,12 @@
-import { Banner } from "react-native-paper";
-
+import BannerComponent from "./components/tuyensinh/Banner";
+import DiemKhoa from "./components/tuyensinh/DiemKhoa";
 import Khoa from "./components/tuyensinh/Khoa";
 
 const App = () => {
   return (
-    <Banner></Banner>
+    //<BannerComponent></BannerComponent>
+    //<Khoa></Khoa>
+    <DiemKhoa></DiemKhoa>
   );
 }
 

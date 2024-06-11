@@ -28,11 +28,16 @@ SECRET_KEY = 'django-insecure-*wxn=^=z89vul8ey3(dt1p3a+j75s8o$vd$ixoe=p0#+joh6%^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.145.1', '127.0.0.1', 'neutral-blatantly-ghost.ngrok-free.app',]
-# '192.168.145.1', '127.0.0.1'
+# ALLOWED_HOSTS = ['neutral-blatantly-ghost.ngrok-free.app',]
+# CSRF_TRUSTED_ORIGINS = ['https://neutral-blatantly-ghost.ngrok-free.app',]
 # Application definition
 
-CSRF_TRUSTED_ORIGINS = ['https://neutral-blatantly-ghost.ngrok-free.app',]
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+ALLOWED_HOSTS = ['feline-helped-safely.ngrok-free.app', '127.0.0.1']
+CSRF_TRUSTED_ORIGINS = ['https://feline-helped-safely.ngrok-free.app']
+
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
