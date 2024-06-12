@@ -1,3 +1,4 @@
+import cloudinary
 from django.contrib import admin
 from django.contrib.admin import AdminSite
 from django.core.exceptions import ValidationError
@@ -62,7 +63,7 @@ class KhoaAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'display_website']
     search_fields = ['name']
     list_filter = ['id', 'name', 'created_date']
-    readonly_fields = ['display_video', 'display_website']
+    readonly_fields = ['display_video', 'display_website', 'display_image']
     ordering = ['id']
     form = KhoaForm
 
@@ -79,6 +80,18 @@ class KhoaAdmin(admin.ModelAdmin):
     display_video.allow_tags = True
     display_video.short_description = 'Video'
 
+    def display_image(self, obj):
+        if obj.image:
+            try:
+                image_url = obj.image.url
+                return mark_safe(f"<img width='100' src='{image_url}'")
+            except Exception as e:
+                return f'Error: {e}'
+        else:
+            return 'Image not available'
+
+    display_image.short_description = 'Image'
+
     def display_website(self, obj):
         if obj.website:
             website_url = obj.website
@@ -93,7 +106,6 @@ class KhoaAdmin(admin.ModelAdmin):
         css = {
             'all': ['/static/css/style.css']
         }
-
 
 class DiemAdmin(admin.ModelAdmin):
     list_display = ['id', 'value']

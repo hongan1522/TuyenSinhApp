@@ -37,7 +37,6 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('admin/', admin_site.urls),
     path('', include('tuyenSinh.urls')),
-    path('khoa/video/<str:year>/<str:month>/<str:filename>', views.get_khoa_video, name='videoKhoa'),
     re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),
     re_path(r'^swagger(?P<format>\.json|\.yaml)$',
             schema_view.without_ui(cache_timeout=0), name='schema-json'),

@@ -5,13 +5,17 @@ class KhoaSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         req = super().to_representation(instance)
         video = instance.video
+        image = instance.image
         if video:
             req['video'] = video.url
+        elif image:
+            req['image'] = image.url
+
         return req
 
     class Meta:
         model = Khoa
-        fields = ['id', 'name', 'website', 'video']
+        fields = ['id', 'name', 'website', 'video', 'image']
 
 class DiemSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,9 +23,12 @@ class DiemSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class DiemKhoaSerializer(serializers.ModelSerializer):
+    khoa_name = serializers.CharField(source='khoa.name', read_only=True)
+    diem_value = serializers.FloatField(source='diem.value', read_only=True)
+
     class Meta:
         model = Diem_Khoa
-        fields = ['id', 'khoa', 'diem', 'year']
+        fields = ['id', 'khoa', 'khoa_name', 'diem', 'diem_value', 'year']
 
 class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):

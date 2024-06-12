@@ -1,249 +1,154 @@
-import { View, ActivityIndicator, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import { View, ActivityIndicator, Provider, TouchableOpacity, StyleSheet, ScrollView, FlatList  } from "react-native";
 import MyStyles from "../../styles/MyStyles";
 import React, { useState, useEffect} from "react";
 import APIs, { endpoints } from "../../configs/APIs";
-import { Chip, Text } from "react-native-paper";
-
-// const DiemKhoa = () => {
-//     const [diemKhoa, setDiemKhoa] = useState([]);
-//     const [loading, setLoading] = useState(true);
-//     const [error, setError] = useState(null);
-  
-//     useEffect(() => {
-//       loadDiemKhoa();
-//     }, []);
-  
-//     const loadDiemKhoa = async () => {
-//       try {
-//         let res = await APIs.get(endpoints['khoa']);
-//         if (res.data && Array.isArray(res.data.results)) {
-//           const khoaList = res.data.results;
-  
-//           const khoaWithDiem = await Promise.all(khoaList.map(async (k) => {
-//             try {
-//               let diemRes = await APIs.get(`${endpoints['khoa']}/${k.id}/get_scores_5year/`);
-//               return { ...k, diem: diemRes.data };
-//             } catch (ex) {
-//               if (ex.response && ex.response.status === 404) {
-//                 console.error(`Error fetching diem for khoa id ${k.id}: `, ex.message);
-//                 return { ...k, diem: Array(5).fill(null) }; // Giả sử có 5 năm, điền null khi không có dữ liệu
-//               } else {
-//                 throw ex;
-//               }
-//             }
-//           }));
-  
-//           setDiemKhoa(khoaWithDiem);
-//         } else {
-//           throw new Error("Expected an array in res.data.results but got: " + JSON.stringify(res.data));
-//         }
-//       } catch (ex) {
-//         setError(ex.message);
-//         console.error(ex);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-  
-//     return (
-//       <View style={styles.container}>
-//         <Text style={styles.title}>Điểm chuẩn 5 năm gần đây</Text>
-//         {loading ? (
-//           <ActivityIndicator size="large" color="#0000ff" />
-//         ) : error ? (
-//           <Text style={styles.error}>Lỗi: {error}</Text>
-//         ) : (
-//           <ScrollView horizontal>
-//             <View style={styles.table}>
-//               <View style={styles.tableRow}>
-//                 <Text style={styles.tableHeader}>STT</Text>
-//                 <Text style={styles.tableHeader}>Khoa</Text>
-//                 {Array.from({ length: 5 }, (_, i) => (
-//                   <Text key={i} style={styles.tableHeader}>Năm {2024 - i}</Text>
-//                 ))}
-//               </View>
-//               {diemKhoa.map((k, index) => (
-//                 <View key={k.id} style={styles.tableRow}>
-//                   <Text style={styles.tableCell}>{index + 1}</Text>
-//                   <Text style={styles.tableCell}>{k.name}</Text>
-//                   {Array.from({ length: 5 }, (_, i) => {
-//                     const diemForYear = k.diem ? k.diem.find((diem) => diem && diem.year === (2024 - i)) : null;
-//                     return (
-//                       <Text key={i} style={styles.tableCell}>
-//                         {diemForYear ? diemForYear.diem.value : 'N/A'}
-//                       </Text>
-//                     );
-//                   })}
-//                 </View>
-//               ))}
-//             </View>
-//           </ScrollView>
-//         )}
-//       </View>
-//     );
-//   };
-  
-//   const styles = StyleSheet.create({
-//     container: {
-//       flex: 1,
-//       backgroundColor: '#f8f8f8',
-//       padding: 20,
-//     },
-//     title: {
-//       fontSize: 24,
-//       fontWeight: 'bold',
-//       marginBottom: 20,
-//     },
-//     error: {
-//       color: 'red',
-//       fontSize: 18,
-//     },
-//     table: {
-//       borderWidth: 1,
-//       borderColor: '#ccc',
-//     },
-//     tableRow: {
-//       flexDirection: 'row',
-//       justifyContent: 'space-between',
-//     },
-//     tableHeader: {
-//       padding: 10,
-//       fontWeight: 'bold',
-//       backgroundColor: '#eee',
-//       borderWidth: 1,
-//       borderColor: '#ccc',
-//       textAlign: 'center',
-//     },
-//     tableCell: {
-//       padding: 10,
-//       borderWidth: 1,
-//       borderColor: '#ccc',
-//       textAlign: 'center',
-//     },
-//   });
-  
-//   export default DiemKhoa;
+import { Chip, Text, DataTable } from "react-native-paper";
+import Styles from "./Styles";
 
 const DiemKhoa = () => {
-    const [diemKhoa, setDiemKhoa] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-  
-    useEffect(() => {
-      loadDiemKhoa();
-    }, []);
-  
-    const loadDiemKhoa = async () => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [diemKhoa, setDiemKhoa] = useState([]);
+  const [page, setPage] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const numberOfItemsPerPageList = [3, 5, 10];
+
+  const fetchAllDiemKhoa = async () => {
+    let allDiemKhoa = [];
+    let page = 1;
+    let hasNextPage = true;
+
+    while (hasNextPage) {
       try {
-        let res = await APIs.get(endpoints['diemkhoa']);
-        if (res.data && Array.isArray(res.data.results)) {
-          const groupedDiemKhoa = groupDiemKhoaByKhoa(res.data.results);
-          setDiemKhoa(groupedDiemKhoa);
+        const response = await APIs.get((`${endpoints['diemkhoa']}?page=${page}`));
+        const { results, next } = response.data;
+        allDiemKhoa = [...allDiemKhoa, ...results];
+
+        if (next) {
+          page++;
         } else {
-          throw new Error("Expected an array in res.data.results but got: " + JSON.stringify(res.data));
+          hasNextPage = false;
         }
-      } catch (ex) {
-        setError(ex.message);
-        console.error(ex);
-      } finally {
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setError("Có lỗi xảy ra khi tải dữ liệu");
+        setLoading(false);
+        return []; 
+      }
+    }
+
+    return allDiemKhoa;
+  };
+
+  useEffect(() => {
+    const fetchAndSetData = async () => {
+      try {
+        const data = await fetchAllDiemKhoa();
+        setDiemKhoa(data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setError("Có lỗi xảy ra khi tải dữ liệu");
         setLoading(false);
       }
     };
-  
-    const groupDiemKhoaByKhoa = (data) => {
-      const groupedData = {};
-  
-      data.forEach(item => {
-        const { khoa, diem, year } = item;
-        if (!groupedData[khoa.id]) {
-          groupedData[khoa.id] = { id: khoa.id, name: khoa.name, diem: [] };
-        }
-        groupedData[khoa.id].diem.push({ year, value: diem });
-      });
-  
-      // Sắp xếp điểm theo năm giảm dần
-      for (const khoaId in groupedData) {
-        groupedData[khoaId].diem.sort((a, b) => b.year - a.year);
+
+    fetchAndSetData();
+  }, []);
+
+  const groupDiemByKhoa = (data) => {
+    const grouped = {};
+
+    data.forEach((item) => {
+      if (!grouped[item.khoa]) {
+        grouped[item.khoa] = {
+          name: item.khoa_name,
+          diem: []
+        };
       }
-  
-      return Object.values(groupedData);
-    };
-  
-    return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Điểm chuẩn 5 năm gần đây</Text>
-        {loading ? (
-          <ActivityIndicator size="large" color="#0000ff" />
-        ) : error ? (
-          <Text style={styles.error}>Lỗi: {error}</Text>
-        ) : (
-          <ScrollView horizontal>
-            <View style={styles.table}>
-              <View style={styles.tableRow}>
-                <Text style={styles.tableHeader}>STT</Text>
-                <Text style={styles.tableHeader}>Khoa</Text>
-                {Array.from({ length: 5 }, (_, i) => (
-                  <Text key={i} style={styles.tableHeader}>{2024 - i}</Text>
-                ))}
-              </View>
-              {diemKhoa.map((k, index) => (
-                <View key={k.id} style={styles.tableRow}>
-                  <Text style={styles.tableCell}>{index + 1}</Text>
-                  <Text style={styles.tableCell}>{k.name}</Text>
-                  {Array.from({ length: 5 }, (_, i) => {
-                    const diemForYear = k.diem.find(d => d.year === (2024 - i));
-                    return (
-                      <Text key={i} style={styles.tableCell}>
-                        {diemForYear ? diemForYear.value : 'N/A'}
-                      </Text>
-                    );
-                  })}
-                </View>
-              ))}
-            </View>
-          </ScrollView>
-        )}
-      </View>
-    );
+      grouped[item.khoa].diem.push({
+        year: item.year,
+        value: item.diem_value
+      });
+    });
+
+    return Object.keys(grouped).map((khoa) => ({
+      khoa,
+      name: grouped[khoa].name,
+      diem: grouped[khoa].diem
+    }));
   };
-  
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: '#f8f8f8',
-      padding: 20,
-    },
-    title: {
-      fontSize: 24,
-      fontWeight: 'bold',
-      marginBottom: 20,
-    },
-    error: {
-      color: 'red',
-      fontSize: 18,
-    },
-    table: {
-      borderWidth: 1,
-      borderColor: '#ccc',
-    },
-    tableRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-    },
-    tableHeader: {
-      padding: 10,
-      fontWeight: 'bold',
-      backgroundColor: '#eee',
-      borderWidth: 1,
-      borderColor: '#ccc',
-      textAlign: 'center',
-    },
-    tableCell: {
-      padding: 10,
-      borderWidth: 1,
-      borderColor: '#ccc',
-      textAlign: 'center',
-    },
-  });
-  
-  export default DiemKhoa;
+
+  const groupedDiemKhoa = diemKhoa.length > 0 ? groupDiemByKhoa(diemKhoa) : [];
+
+  const from = page * itemsPerPage;
+  const to = Math.min((page + 1) * itemsPerPage, groupedDiemKhoa.length);
+
+  useEffect(() => {
+    setPage(0);
+  }, [itemsPerPage]);
+
+  return (
+    <View style={MyStyles.container}>
+      <Text style={MyStyles.title}>Điểm chuẩn 5 năm gần đây</Text>
+      {loading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : error ? (
+        <Text style={MyStyles.error}>Lỗi: {error}</Text>
+      ) : (
+        <ScrollView>
+            <ScrollView horizontal>
+            <DataTable style={[Styles.table, Styles.tableHeaderText]}>
+              <DataTable.Header style={Styles.tableHeaderRow}>
+                <DataTable.Title style={[Styles.cellBorder, { borderLeftWidth: 0 }]}>
+                  <View style={Styles.centerText}><Text style={[Styles.tableHeaderText, { flex: 1, maxWidth: 50 }]}>STT</Text></View>
+                </DataTable.Title>
+                <DataTable.Title style={{ flex: 5 }}>
+                  <View style={Styles.centerText}><Text style={[Styles.tableHeaderText]}>Tên Khoa</Text></View>
+                </DataTable.Title>
+                {Array.from({ length: 5 }, (_, i) => (
+                  <DataTable.Title key={`header-${i}`} style={{ flex: 1 }}>
+                    <View style={Styles.centerText}><Text style={[Styles.tableHeaderText]}>{new Date().getFullYear() - i}</Text></View>
+                  </DataTable.Title>
+                ))}
+              </DataTable.Header>
+              {groupedDiemKhoa.slice(from, to).map((k, index) => (
+                <DataTable.Row
+                key={`khoa-${k.khoa}`}
+                style={index % 2 === 0 ? Styles.tableRowEven : Styles.tableRowOdd}
+              >
+                <DataTable.Cell >{index + 1}</DataTable.Cell>
+                <DataTable.Cell style={{ flex: 6, maxWidth: 160 }}>
+                  <Text numberOfLines={0}>{k.name}</Text>
+                </DataTable.Cell>
+                {Array.from({ length: 5 }, (_, j) => {
+                  const year = 2024 - j;
+                  const diemForYear = k.diem.find(d => d.year === year);
+                  return (
+                    <DataTable.Cell style={{ flex: 1,}} key={`khoa-${k.khoa}-diem-${j}`}>
+                      {diemForYear ? diemForYear.value : '__'}
+                    </DataTable.Cell>
+                  );
+                })}
+              </DataTable.Row>
+              ))}
+              <DataTable.Pagination
+                page={page}
+                numberOfPages={Math.ceil(groupedDiemKhoa.length / itemsPerPage)}
+                onPageChange={(page) => setPage(page)}
+                label={`${from + 1}-${to} of ${groupedDiemKhoa.length}`}
+                numberOfItemsPerPageList={numberOfItemsPerPageList}
+                numberOfItemsPerPage={itemsPerPage}
+                onItemsPerPageChange={setItemsPerPage}
+                showFastPaginationControls
+                selectPageDropdownLabel={"Rows per page"}
+              />
+            </DataTable>
+          </ScrollView>
+        </ScrollView>
+      )}
+    </View>
+  );
+};
+
+export default DiemKhoa;

@@ -26,16 +26,11 @@ export default StyleSheet.create({
         shadowColor: '#000000',
         shadowOffset: {
             width: 0,
-            height: 2,
+            height: 4, 
         },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
-    },
-    chip: {
-        margin: 5,
-        marginBottom: 20,
-        justifyContent: 'flex-start',
+        shadowOpacity: 0.5,
+        shadowRadius: 6.27,  
+        elevation: 10,
     },
     label: {
         borderWidth: 1,
@@ -45,11 +40,12 @@ export default StyleSheet.create({
         marginVertical: 5,
         width: '100%', 
         textAlign: 'center',
-        backgroundColor: '#E8E8E8',
+        backgroundColor: '#EAF2F8',
     },
     text: {
         fontSize: 16,
-        marginBottom: 5,
+        marginBottom: 10,
+        marginTop: 5
     },
     link: {
         color: 'blue',
@@ -63,5 +59,26 @@ export default StyleSheet.create({
         fontSize: 16,
         color: 'red',
         textAlign: 'center',
+    },
+    margin: {
+        margin: 7
+    },
+    contentContainer: {
+        flex: 8, 
+        justifyContent: 'center',
+        paddingLeft: 30,
+    },
+    logoContainer: {
+        flex: 2,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    logo: {
+        width: 88,
+        height: 88,
+        borderRadius: 20, 
+        borderWidth: 2,    
+        borderColor: 'gainsboro', 
+        resizeMode: 'stretch',
     },
 });

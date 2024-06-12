@@ -11,18 +11,6 @@ import os
 
 from tuyenSinh.serializers import TuyenSinhSerializer, TinTucSerializer, BannerSerializer, KhoaSerializer
 
-
-def get_khoa_video(request, year, month, filename):
-    video_path = os.path.join('khoa', 'video', year, month, filename)
-    full_video_path = os.path.join(settings.MEDIA_ROOT, video_path)
-
-    if os.path.exists(full_video_path):
-        with open(full_video_path, 'rb') as video_file:
-            response = HttpResponse(video_file.read(), content_type='video/mp4')
-        return response
-    else:
-        return HttpResponse('Video not found', status=404)
-
 # ViewSets
 class KhoaViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = Khoa.objects.filter(active=True)

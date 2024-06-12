@@ -25,6 +25,7 @@ class Khoa(BaseModel):
     program_description = RichTextField()
     website = models.URLField(validators=[URLValidator()])
     video = CloudinaryField(resource_type='video',  null=True, blank=True)
+    image = CloudinaryField(null=False)
 
     class Meta:
         verbose_name = 'Khoa'
