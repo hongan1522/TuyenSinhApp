@@ -7,15 +7,40 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import { NavigationContainer } from '@react-navigation/native';
 import Login from './components/user/login';
 import { Provider } from 'react-native-paper';
+import TinTucScreen from './components/tuyensinh/tintuc';
+import AllNewsScreen from './components/tuyensinh/TinTucs';
+import NewsByTypeScreen from './components/tuyensinh/tintuctungloai';
+import { createStackNavigator } from '@react-navigation/stack';
 
 const Drawer = createDrawerNavigator();
+const Stack = createStackNavigator();
 
+const HomeStack = () => {
+  return (
+    <Stack.Navigator initialRouteName="HomeMain">
+      <Stack.Screen name="HomeMain" component={HomeScreen} options={{ title: 'Home' }} />
+      <Stack.Screen name="TinTuc" component={TinTucScreen} options={{ title: 'Tin Tức Chi Tiết' }} />
+      <Stack.Screen name="AllNews" component={AllNewsScreen} options={{ title: 'All News' }} />
+      <Stack.Screen name="NewsByType" component={NewsByTypeScreen} />
+    </Stack.Navigator>
+  );
+};
+
+const MainStackNavigator = () => {
+  return (
+    <Stack.Navigator initialRouteName="DrawerScreens" headerMode="none">
+      <Stack.Screen name="DrawerScreens" component={DrawerScreens} />
+      <Stack.Screen name="AllNews" component={AllNewsScreen} options={{ title: 'All News' }} />
+      <Stack.Screen name="Banner" component={BannerComponent} />
+    </Stack.Navigator>
+  );
+};
 export default function App() {
   return (
     <Provider>
       <NavigationContainer>
         <Drawer.Navigator initialRouteName='Home'>
-          <Drawer.Screen name='Home' component={HomeScreen}/>
+          <Drawer.Screen name='Home' component={HomeStack}/>
           <Drawer.Screen name='Login' component={Login}/>
           <Drawer.Screen name='Banner' component={BannerComponent}/>
           <Drawer.Screen name='Khoa' component={Khoa}/>

@@ -34,8 +34,8 @@ DEBUG = True
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-ALLOWED_HOSTS = ['feline-helped-safely.ngrok-free.app', '127.0.0.1']
-CSRF_TRUSTED_ORIGINS = ['https://feline-helped-safely.ngrok-free.app']
+ALLOWED_HOSTS = ['feline-helped-safely.ngrok-free.app', '127.0.0.1', 'neutral-blatantly-ghost.ngrok-free.app']
+CSRF_TRUSTED_ORIGINS = ['https://feline-helped-safely.ngrok-free.app', 'https://neutral-blatantly-ghost.ngrok-free.app']
 
 
 

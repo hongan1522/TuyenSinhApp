@@ -9,8 +9,9 @@ from rest_framework.response import Response
 import datetime
 import os
 
-from tuyenSinh.serializers import TuyenSinhSerializer, TinTucSerializer, BannerSerializer, KhoaSerializer
-
+from tuyenSinh.serializers import TuyenSinhSerializer, TinTucSerializer, BannerSerializer, KhoaSerializer, \
+    AuthenticatedTinTucSerializer, BinhLuanSerializer
+from .paginators import ItemPaginator, BinhLuanPaginator
 # ViewSets
 class KhoaViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = Khoa.objects.filter(active=True)
@@ -658,22 +659,27 @@ class BannerViewSet(viewsets.ViewSet, generics.ListAPIView):
 class TinTucViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
     queryset = TinTuc.objects.all()
     serializer_class = TinTucSerializer
+    pagination_class = ItemPaginator
 
     def get_permissions(self):
         if self.action in ['add_binhluan', 'like']:
             return [permissions.IsAuthenticated()]
-
         return [permissions.AllowAny()]
 
     def get_serializer_class(self):
         if self.request.user.is_authenticated:
-            return serializers.AuthenticatedTinTucSerializer
-
+            return AuthenticatedTinTucSerializer
         return self.serializer_class
 
     @swagger_auto_schema(responses={200: TinTucSerializer(many=True)})
     def list(self, request):
-        serializer = self.serializer_class(self.queryset, many=True)
+        queryset = self.queryset
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(queryset, request)
+        if page is not None:
+            serializer = self.get_serializer_class()(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+        serializer = self.get_serializer_class()(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(responses={200: TinTucSerializer()})
@@ -688,7 +694,7 @@ class TinTucViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
 
     @swagger_auto_schema(request_body=TinTucSerializer, responses={201: TinTucSerializer()})
     def create(self, request):
-        serializer = self.serializer_class(data=request.data)
+        serializer = self.get_serializer_class()(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -698,7 +704,7 @@ class TinTucViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
     def update(self, request, pk=None):
         try:
             tintuc = TinTuc.objects.get(pk=pk)
-            serializer = self.serializer_class(tintuc, data=request.data)
+            serializer = self.get_serializer_class()(tintuc, data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -710,7 +716,7 @@ class TinTucViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
     def partial_update(self, request, pk=None):
         try:
             tintuc = TinTuc.objects.get(pk=pk)
-            serializer = self.serializer_class(tintuc, data=request.data, partial=True)
+            serializer = self.get_serializer_class()(tintuc, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -731,49 +737,58 @@ class TinTucViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
     def get_tuyen_sinh(self, request, pk=None):
         tin_tuc = self.get_object()
         tuyen_sinh = TuyenSinh.objects.filter(tintuc=tin_tuc)
-
         q = request.query_params.get('q')
         if q:
             tuyen_sinh = tuyen_sinh.filter(introduction__icontains=q)
-
         return Response(TuyenSinhSerializer(tuyen_sinh, many=True).data, status=status.HTTP_200_OK)
 
     @action(methods=['get'], url_path='binhluan', detail=True)
     def get_binhluan(self, request, pk):
         bl = BinhLuan.objects.filter(tintuc_id=pk)
-
-        paginator = paginators.BinhLuanPaginator()
+        paginator = BinhLuanPaginator()
         page = paginator.paginate_queryset(bl, request)
         if page is not None:
-            serializer = serializers.BinhLuanSerializer(page, many=True)
+            serializer = BinhLuanSerializer(page, many=True)
             return paginator.get_paginated_response(serializer.data)
-
-        return Response(serializers.BinhLuanSerializer(bl, many=True).data, status.HTTP_200_OK)
+        return Response(BinhLuanSerializer(bl, many=True).data, status.HTTP_200_OK)
 
     @action(methods=['post'], url_path='binhluan', detail=True)
     def add_binhluan(self, request, pk):
         bl = self.get_object().binhluan_set.create(user=request.user, content=request.data.get('content'))
-
-        return Response(serializers.BinhLuanSerializer(bl).data, status=status.HTTP_201_CREATED)
+        return Response(BinhLuanSerializer(bl).data, status=status.HTTP_201_CREATED)
 
     @action(methods=['post'], url_path='like', detail=True)
     def like(self, request, pk):
         l, created = Like.objects.get_or_create(tintuc=self.get_object(), user=request.user)
-
         if not created:
             l.active = not l.active
             l.save()
-
-        serializer = serializers.AuthenticatedTinTucSerializer(self.get_object(), context={'request': request})
+        serializer = AuthenticatedTinTucSerializer(self.get_object(), context={'request': request})
         return Response(serializer.data)
+
+
+from rest_framework.response import Response
+from rest_framework import status, viewsets, generics
+from rest_framework.decorators import action
+from drf_yasg.utils import swagger_auto_schema
+from .models import TuyenSinh
+from .serializers import TuyenSinhSerializer
+from . import paginators
 
 class TuyenSinhViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = TuyenSinh.objects.all()
     serializer_class = TuyenSinhSerializer
+    pagination_class = paginators.ItemPaginator
 
     @swagger_auto_schema(responses={200: TuyenSinhSerializer(many=True)})
     def list(self, request):
-        serializer = self.serializer_class(self.queryset, many=True)
+        queryset = self.queryset
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(queryset, request)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+        serializer = self.serializer_class(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(responses={200: TuyenSinhSerializer()})
