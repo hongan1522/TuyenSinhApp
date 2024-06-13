@@ -11,6 +11,7 @@ import TinTucScreen from './components/tuyensinh/tintuc';
 import AllNewsScreen from './components/tuyensinh/TinTucs';
 import NewsByTypeScreen from './components/tuyensinh/tintuctungloai';
 import { createStackNavigator } from '@react-navigation/stack';
+import KhoaDetail from './components/tuyensinh/KhoaDetail';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -25,6 +26,15 @@ const HomeStack = () => {
     </Stack.Navigator>
   );
 };
+
+const KhoaStack = () => {
+  return (
+    <Stack.Navigator initialRouteName='KhoaMain'>
+      <Stack.Screen name='KhoaMain' component={Khoa} options={{ title: 'Thông tin các khoa' }}/>
+      <Stack.Screen name="KhoaDetail" component={KhoaDetail} options={{ title: 'Chi tiết khoa' }}/>
+    </Stack.Navigator>
+  )
+}
 
 const MainStackNavigator = () => {
   return (
@@ -43,7 +53,7 @@ export default function App() {
           <Drawer.Screen name='Home' component={HomeStack}/>
           <Drawer.Screen name='Login' component={Login}/>
           <Drawer.Screen name='Banner' component={BannerComponent}/>
-          <Drawer.Screen name='Khoa' component={Khoa}/>
+          <Drawer.Screen name='Khoa' component={KhoaStack}/>
           <Drawer.Screen name='Điểm chuẩn' component={DiemKhoa}/>
         </Drawer.Navigator>
     </NavigationContainer>

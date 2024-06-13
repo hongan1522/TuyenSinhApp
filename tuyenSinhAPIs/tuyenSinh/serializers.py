@@ -8,7 +8,7 @@ class KhoaSerializer(serializers.ModelSerializer):
         image = instance.image
         if video:
             req['video'] = video.url
-        elif image:
+        if image:
             req['image'] = image.url
 
         return req

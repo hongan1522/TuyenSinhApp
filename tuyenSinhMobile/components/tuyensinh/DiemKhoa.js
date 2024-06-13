@@ -1,4 +1,4 @@
-import { View, ActivityIndicator, Provider, TouchableOpacity, StyleSheet, ScrollView, FlatList  } from "react-native";
+import { View, ActivityIndicator, ScrollView, Searchbar  } from "react-native";
 import MyStyles from "../../styles/MyStyles";
 import React, { useState, useEffect} from "react";
 import APIs, { endpoints } from "../../configs/APIs";

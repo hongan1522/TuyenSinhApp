@@ -237,10 +237,10 @@ class TinTucForm(forms.ModelForm):
         fields = '__all__'
 
 class TinTucAdmin(admin.ModelAdmin):
-    list_display = ('name', 'created_date', 'active', 'tuyenSinh')
+    list_display = ('id','name', 'created_date', 'tuyenSinh')
     search_fields = ('name', 'content')
-    list_filter = ('created_date', 'active')
-    ordering = ('-created_date',)
+    list_filter = ('created_date', 'tuyenSinh')
+    ordering = ('id',)
     form = TinTucForm
 
     def tuyenSinh(self, obj):
@@ -260,10 +260,10 @@ class TuyenSinhForm(forms.ModelForm):
         fields = '__all__'
 
 class TuyenSinhAdmin(admin.ModelAdmin):
-    list_display = ('type', 'khoa', 'formatted_start_date', 'formatted_end_date')  # Include the formatted date methods
+    list_display = ('id', 'type', 'khoa', 'formatted_start_date', 'formatted_end_date')  # Include the formatted date methods
     search_fields = ('khoa__name', 'introduction')
     list_filter = ('type', 'start_date', 'end_date')
-    ordering = ('-start_date',)
+    ordering = ('id',)
     form = TuyenSinhForm
 
     def type(self, obj):

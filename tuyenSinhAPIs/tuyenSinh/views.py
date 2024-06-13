@@ -16,7 +16,7 @@ from .paginators import ItemPaginator, BinhLuanPaginator
 class KhoaViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = Khoa.objects.filter(active=True)
     serializer_class = serializers.KhoaSerializer
-    pagination_class = paginators.ItemPaginator
+    pagination_class = paginators.KhoaPaginator
 
     def get_queryset(self):
         queryset = self.queryset

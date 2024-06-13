@@ -1,8 +1,8 @@
 import axios from "axios";
 
-//const BASE_URL = 'https://feline-helped-safely.ngrok-free.app/'; 
+const BASE_URL = 'https://feline-helped-safely.ngrok-free.app/'; 
 
- const BASE_URL = 'https://neutral-blatantly-ghost.ngrok-free.app'; 
+//  const BASE_URL = 'https://neutral-blatantly-ghost.ngrok-free.app'; 
 
 export const endpoints = {
     khoa: '/khoa/',
