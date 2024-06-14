@@ -11,7 +11,7 @@ import os
 
 from tuyenSinh.serializers import TuyenSinhSerializer, TinTucSerializer, BannerSerializer, KhoaSerializer, \
     AuthenticatedTinTucSerializer, BinhLuanSerializer
-from .paginators import ItemPaginator, BinhLuanPaginator
+from .paginators import ItemPaginator, BinhLuanPaginator, TintucPaginator
 # ViewSets
 class KhoaViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = Khoa.objects.filter(active=True)
@@ -659,7 +659,7 @@ class BannerViewSet(viewsets.ViewSet, generics.ListAPIView):
 class TinTucViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
     queryset = TinTuc.objects.all()
     serializer_class = TinTucSerializer
-    pagination_class = ItemPaginator
+    pagination_class = TintucPaginator
 
     def get_permissions(self):
         if self.action in ['add_binhluan', 'like']:

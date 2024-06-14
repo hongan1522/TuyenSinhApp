@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import BannerComponent from './components/tuyensinh/Banner';
 import HomeScreen from './components/tuyensinh/HomeScreen';
 import Khoa from './components/tuyensinh/Khoa';
@@ -8,9 +8,11 @@ import { NavigationContainer } from '@react-navigation/native';
 import Login from './components/user/login';
 import { Provider } from 'react-native-paper';
 import TinTucScreen from './components/tuyensinh/tintuc';
-import AllNewsScreen from './components/tuyensinh/TinTucs';
-import NewsByTypeScreen from './components/tuyensinh/tintuctungloai';
 import { createStackNavigator } from '@react-navigation/stack';
+import SeeMoreScreen from './components/tuyensinh/TinTucTungLoaiTuyenSinh';
+import MyContext from './configs/MyContext';
+import MyUserReducer from './reducer/MyUserReducer';
+import Logout from './components/user/logout';
 import KhoaDetail from './components/tuyensinh/KhoaDetail';
 
 const Drawer = createDrawerNavigator();
@@ -21,8 +23,7 @@ const HomeStack = () => {
     <Stack.Navigator initialRouteName="HomeMain">
       <Stack.Screen name="HomeMain" component={HomeScreen} options={{ title: 'Home' }} />
       <Stack.Screen name="TinTuc" component={TinTucScreen} options={{ title: 'Tin Tức Chi Tiết' }} />
-      <Stack.Screen name="AllNews" component={AllNewsScreen} options={{ title: 'All News' }} />
-      <Stack.Screen name="NewsByType" component={NewsByTypeScreen} />
+      <Stack.Screen name="SeeMore" component={SeeMoreScreen} />
     </Stack.Navigator>
   );
 };
@@ -36,28 +37,27 @@ const KhoaStack = () => {
   )
 }
 
-const MainStackNavigator = () => {
-  return (
-    <Stack.Navigator initialRouteName="DrawerScreens" headerMode="none">
-      <Stack.Screen name="DrawerScreens" component={DrawerScreens} />
-      <Stack.Screen name="AllNews" component={AllNewsScreen} options={{ title: 'All News' }} />
-      <Stack.Screen name="Banner" component={BannerComponent} />
-    </Stack.Navigator>
-  );
-};
 export default function App() {
+  const [user, dispatch] = useReducer(MyUserReducer, null);
   return (
-    <Provider>
+    <MyContext.Provider value={[user, dispatch]}>
       <NavigationContainer>
-        <Drawer.Navigator initialRouteName='Home'>
+        <Drawer.Navigator initialRouteName='Home' screenOptions={{headerRight: Logout}}>
           <Drawer.Screen name='Home' component={HomeStack}/>
-          <Drawer.Screen name='Login' component={Login}/>
+          
+          {user===null?<>
+            <Drawer.Screen name='Login' component={Login} options={{ title: 'Đăng nhập' }}/>
+            </>:<>
+            <Drawer.Screen name={user.username} component={HomeStack} />
+            
+            </>}
+            <Drawer.Screen name='Logout' component={Logout} options={{ drawerItemStyle: {display: "none"} }}/>
           <Drawer.Screen name='Banner' component={BannerComponent}/>
-          <Drawer.Screen name='Khoa' component={KhoaStack}/>
+          <Drawer.Screen name='Khoa' component={Khoa}/>
           <Drawer.Screen name='Điểm chuẩn' component={DiemKhoa}/>
         </Drawer.Navigator>
     </NavigationContainer>
-    </Provider>
+    </MyContext.Provider>
   )
 }
 

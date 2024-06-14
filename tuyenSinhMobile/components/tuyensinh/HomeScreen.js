@@ -8,7 +8,7 @@ import { TYPE_MAP } from '../../configs/typemap';
 const { width } = Dimensions.get('window');
 
 const HomeScreen = ({ navigation }) => {
-    const [tintucs, setTinTucs] = useState([]);
+    const [newsData, setNewsData] = useState({ 1: [], 2: [], 3: [], 4: [], 5: [] });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedImages, setSelectedImages] = useState([]);
@@ -17,18 +17,47 @@ const HomeScreen = ({ navigation }) => {
 
     const loadTinTucs = async () => {
         try {
-            const response = await authApi().get(endpoints.tintuc);
-            console.log('Tin Tức trả về:', response.data); // Log dữ liệu tin tức
-
-            // Truy cập vào mảng dữ liệu trong trường 'results' và giới hạn 5 phần tử
-            const slicedData = response.data.results.slice(0, 5);
-            setTinTucs(slicedData);
+            let allData = [];
+            let nextPage = endpoints.tintuc;
+    
+            // Fetch all pages
+            while (nextPage) {
+                const response = await authApi().get(nextPage);
+                console.log('Tin Tức trả về:', response.data);
+    
+                allData = [...allData, ...response.data.results];
+                nextPage = response.data.next;
+            }
+    
+            console.log('All data received from API:', allData);
+    
+            // Sort data by publication date (assuming the field is named 'updates_date')
+            allData.sort((a, b) => new Date(b.updates_date) - new Date(a.updates_date));
+    
+            const groupedData = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+    
+            allData.forEach(item => {
+                if (groupedData[item.tuyenSinh]) {
+                    groupedData[item.tuyenSinh].push(item);
+                }
+            });
+    
+            console.log('Grouped Data before slicing:', groupedData);
+    
+            for (let key in groupedData) {
+                groupedData[key] = groupedData[key].slice(0, 5);
+            }
+    
+            console.log('Grouped Data after slicing:', groupedData);
+    
+            setNewsData(groupedData);
         } catch (ex) {
             setError(ex);
         } finally {
             setLoading(false);
         }
     };
+    
 
     const loadSelectedImages = async () => {
         try {
@@ -54,14 +83,6 @@ const HomeScreen = ({ navigation }) => {
             return () => {};
         }, [])
     );
-
-    const handleLoadMore = () => {
-        if (Array.isArray(tintucs)) {
-            navigation.navigate('AllNews', { tintucs });
-        } else {
-            console.error('tintucs is not an array');
-        }
-    };
 
     useEffect(() => {
         let timer;
@@ -103,30 +124,30 @@ const HomeScreen = ({ navigation }) => {
                 ) : error ? (
                     <Text style={styles.errorText}>Error: {error.message}</Text>
                 ) : (
-                    <View>
-                        {tintucs.map(tintuc => (
-                            <TouchableOpacity
-                                key={tintuc.id}
-                                style={styles.tinTucContainer}
-                                onPress={() => navigation.navigate('TinTuc', { id: tintuc.id })}
-                            >
-                                <Text style={styles.tinTucName}>{tintuc.name}</Text>
-                                <Text style={styles.tinTucTuyenSinh}>Tuyển sinh: {TYPE_MAP[tintuc.tuyenSinh]}</Text>
-                            </TouchableOpacity>
+                    <>
+                        {Object.keys(newsData).map(key => (
+                            <View key={key} style={styles.sectionContainer}>
+                                <Text style={styles.sectionHeaderText}>{TYPE_MAP[key]}</Text>
+                                {newsData[key].map(tintuc => (
+                                    <TouchableOpacity
+                                        key={tintuc.id}
+                                        style={styles.tinTucContainer}
+                                        onPress={() => navigation.navigate('TinTuc', { id: tintuc.id })}
+                                    >
+                                        <Text style={styles.tinTucName}>{tintuc.name}</Text>
+                                        
+                                    </TouchableOpacity>
+                                ))}
+                                <TouchableOpacity
+                                    style={styles.loadMoreButton}
+                                    onPress={() => navigation.navigate('SeeMore', { tuyenSinhType: parseInt(key) })}
+                                >
+                                    <Text style={styles.loadMoreButtonText}>Xem Thêm</Text>
+                                </TouchableOpacity>
+                            </View>
                         ))}
-                        <TouchableOpacity style={styles.loadMoreButton} onPress={handleLoadMore}>
-                            <Text style={styles.loadMoreButtonText}>Xem Thêm</Text>
-                        </TouchableOpacity>
-                    </View>
+                    </>
                 )}
-            </View>
-            <View style={styles.sectionContainer}>
-                <Text style={styles.sectionHeaderText}>Tuyển Sinh</Text>
-                {/* Add content for Tuyển Sinh section here */}
-            </View>
-            <View style={styles.sectionContainer}>
-                <Text style={styles.sectionHeaderText}>Khoa</Text>
-                {/* Add content for Khoa section here */}
             </View>
         </ScrollView>
     );
@@ -203,7 +224,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     sectionContainer: {
-        width: '90%',
+        width: '100%',
         marginTop: 20,
         backgroundColor: '#fff',
         padding: 10,

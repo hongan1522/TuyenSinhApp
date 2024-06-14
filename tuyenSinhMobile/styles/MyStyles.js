@@ -117,4 +117,7 @@ export default StyleSheet.create({
         borderColor: 'gainsboro', 
         resizeMode: 'stretch',
     },
+    name: {
+        color: "green"
+    },
 });
