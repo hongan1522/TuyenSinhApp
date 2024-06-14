@@ -53,7 +53,7 @@ export default function App() {
             </>}
             <Drawer.Screen name='Logout' component={Logout} options={{ drawerItemStyle: {display: "none"} }}/>
           <Drawer.Screen name='Banner' component={BannerComponent}/>
-          <Drawer.Screen name='Khoa' component={Khoa}/>
+          <Drawer.Screen name='Khoa' component={KhoaStack}/>
           <Drawer.Screen name='Điểm chuẩn' component={DiemKhoa}/>
         </Drawer.Navigator>
     </NavigationContainer>

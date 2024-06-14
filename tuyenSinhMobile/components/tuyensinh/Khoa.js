@@ -84,12 +84,12 @@ const Khoa = ({navigation}) => {
                                         <View style={MyStyles.contentContainer}>
                                             <Text style={MyStyles.label}>{k.name}</Text>
                                             <Text style={MyStyles.text}>
-                                                <Text style={MyStyles.name}>Tên: </Text>
+                                                <Text style={MyStyles.nameBold}>Tên: </Text>
                                                 {k.name}
                                             </Text>
                                             <TouchableOpacity onPress={() => Linking.openURL(k.website)}>
                                                 <Text style={MyStyles.link}>
-                                                    <Text style={MyStyles.name}>Trang web: </Text>
+                                                    <Text style={MyStyles.nameBold}>Trang web: </Text>
                                                     {k.website}
                                                 </Text>
                                             </TouchableOpacity>

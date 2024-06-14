@@ -59,22 +59,22 @@ const KhoaDetail = ({route}) => {
     }
 
     return (
-        <ScrollView>
-            <View style={MyStyles.container}>
+        <ScrollView style={MyStyles.container}>
+            <View>
                 <TitleWithLines title={khoa.name} />
                 {khoa.image && (
                     <Image source={{ uri: khoa.image }} style={styles.image} />
                 )}
-                <Text style={MyStyles.margin}>
-                    <Text style={[MyStyles.name]}>Giới thiệu: </Text>
+                <Text style={[MyStyles.margin]}>
+                    <Text style={[MyStyles.nameBold]}>Giới thiệu: </Text>
                 {khoa.introduction}</Text>
                 <Text style={MyStyles.margin}>
-                    <Text style={MyStyles.name}>Chương trình đào tạo: </Text>
+                    <Text style={MyStyles.nameBold}>Chương trình đào tạo: </Text>
                 {khoa.program_description}</Text>
                 {khoa.website && (
                     <TouchableOpacity onPress={() => Linking.openURL(khoa.website)}>
                         <Text style={[MyStyles.link, MyStyles.margin]}>
-                            <Text style={MyStyles.name}>Trang web: </Text>
+                            <Text style={MyStyles.nameBold}>Trang web: </Text>
                         {khoa.website}</Text>
                     </TouchableOpacity>
                 )}
@@ -95,7 +95,7 @@ const KhoaDetail = ({route}) => {
 const styles = StyleSheet.create({
     image: {
         width: '60%',
-        height: 100, 
+        height: 120, 
         resizeMode: 'stretch',
         marginBottom: 15,
         marginLeft: 60,

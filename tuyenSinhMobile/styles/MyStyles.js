@@ -87,9 +87,10 @@ export default StyleSheet.create({
         color: 'blue',
         textDecorationLine: 'none',
     },
-    name: {
+    nameBold: {
         color: 'black',
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        fontSize: 16
     },
     error: {
         fontSize: 16,

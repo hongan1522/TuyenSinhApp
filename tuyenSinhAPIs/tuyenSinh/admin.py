@@ -4,7 +4,8 @@ from django.contrib.admin import AdminSite
 from django.core.exceptions import ValidationError
 from django.template.response import TemplateResponse
 from django.urls import path
-
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from tuyenSinh.models import Khoa, Diem, ThiSinh, TuyenSinh, TinTuc, BinhLuan, Banner, Diem_Khoa, TuVanVien, User, Admin
 from django.utils.html import mark_safe, format_html
 from django import forms
@@ -58,11 +59,10 @@ class KhoaForm(forms.ModelForm):
         model = Khoa
         fields = '__all__'
 
-
 class KhoaAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'display_website']
     search_fields = ['name']
-    list_filter = ['id', 'name', 'created_date']
+    list_filter = ['name', 'created_date']
     readonly_fields = ['display_video', 'display_website', 'display_image']
     ordering = ['id']
     form = KhoaForm
@@ -285,6 +285,54 @@ class TuyenSinhAdmin(admin.ModelAdmin):
 
     formatted_end_date.short_description = 'End Date'
 
+class CustomUserCreationForm(UserCreationForm):
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = ('username', 'email', 'first_name', 'last_name', 'role', 'avatar')
+
+class CustomUserChangeForm(UserChangeForm):
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'first_name', 'last_name', 'role', 'avatar')
+
+class UserAdmin(BaseUserAdmin):
+    add_form = CustomUserCreationForm
+    form = CustomUserChangeForm
+    model = User
+    list_display = ('id', 'username', 'email', 'role')
+    search_fields = ('username', 'email')
+    list_filter = ('role',)
+    ordering = ('id',)
+    readonly_fields = ('user_avatar', )
+
+    def user_avatar(self, obj):
+        if obj.avatar:
+            try:
+                avatar_url = obj.avatar.url
+                return mark_safe(f"<img width='80' src='{avatar_url}' />")
+            except Exception as e:
+                return f'Error: {e}'
+        else:
+            return 'Avatar not available'
+
+    user_avatar.short_description = 'Avatar'
+
+    fieldsets = (
+        (None, {'fields': ('username', 'first_name', 'last_name', 'email', 'role', 'avatar')}),
+    )
+
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username', 'first_name', 'last_name', 'password1', 'password2', 'email', 'role', 'avatar'),
+        }),
+    )
+
+    class Media:
+        css = {
+            'all': ['/static/css/style.css']
+        }
+
 
 admin_site.register(Khoa, KhoaAdmin)
 admin_site.register(Diem, DiemAdmin)
@@ -296,3 +344,7 @@ admin_site.register(TuyenSinh, TuyenSinhAdmin)
 admin_site.register(Banner, BannerAdmin)
 admin_site.register(BinhLuan, BinhLuanAdmin)
 admin_site.register(Admin, AdminAdmin)
+admin_site.register(User, UserAdmin)
+from oauth2_provider.models import Application
+
+admin_site.register(Application)

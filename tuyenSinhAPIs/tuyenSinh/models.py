@@ -79,6 +79,11 @@ class User(AbstractUser):
         verbose_name = 'Tài khoản'
         verbose_name_plural = 'Tài khoản'
 
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.role = self.role or User.THI_SINH
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.username
 

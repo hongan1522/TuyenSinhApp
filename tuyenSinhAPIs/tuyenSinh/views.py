@@ -1,17 +1,14 @@
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, generics, status, parsers, permissions
-from django.http import HttpResponse
-from django.conf import settings
 from tuyenSinh.models import Khoa, Diem, Diem_Khoa, ThiSinh, TuVanVien, User, TuyenSinh, TinTuc, Banner, BinhLuan, Admin, Like
 from tuyenSinh import serializers, paginators, perms
 from rest_framework.decorators import action
-from rest_framework.response import Response
 import datetime
-import os
-
 from tuyenSinh.serializers import TuyenSinhSerializer, TinTucSerializer, BannerSerializer, KhoaSerializer, \
     AuthenticatedTinTucSerializer, BinhLuanSerializer
 from .paginators import ItemPaginator, BinhLuanPaginator, TintucPaginator
+
+
 # ViewSets
 class KhoaViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = Khoa.objects.filter(active=True)
@@ -35,6 +32,11 @@ class KhoaViewSet(viewsets.ViewSet, generics.ListAPIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Khoa.DoesNotExist:
             return Response({"detail": "Khoa not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def get_permissions(self):
+        if self.action in ['create','destroy', 'update', 'partial_update']:
+            return [perms.IsAdmin()]
+        return [permissions.AllowAny()]
 
     def create(self, request):
         serializer = self.serializer_class(data=request.data)
@@ -131,6 +133,11 @@ class DiemViewSet(viewsets.ViewSet, generics.ListAPIView):
     serializer_class = serializers.DiemSerializer
     pagination_class = paginators.ItemPaginator
 
+    def get_permissions(self):
+        if self.action in ['create','destroy', 'update', 'partial_update']:
+            return [perms.IsAdmin()]
+        return [permissions.AllowAny()]
+
     def retrieve(self, request, pk=None):
         try:
             diem = Diem.objects.get(pk=pk)
@@ -170,6 +177,11 @@ class DiemKhoaViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = Diem_Khoa.objects.all()
     serializer_class = serializers.DiemKhoaSerializer
     pagination_class = paginators.ItemPaginator
+
+    def get_permissions(self):
+        if self.action in ['create','destroy', 'update', 'partial_update']:
+            return [perms.IsAdmin()]
+        return [permissions.AllowAny()]
 
     def retrieve(self, request, pk=None):
         try:
@@ -272,7 +284,6 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView):
     def get_permissions(self):
         if self.action in ['current_user']:
             return [permissions.IsAuthenticated()]
-
         return [permissions.AllowAny()]
 
     @action(methods=['get', 'patch'], url_path='', detail=False)
@@ -302,6 +313,11 @@ class ThiSinhViewSet(viewsets.ViewSet, generics.ListAPIView):
             queryset = queryset.filter(name__icontains=q)
 
         return queryset
+
+    def get_permissions(self):
+        if self.action in ['create','destroy', 'update', 'partial_update']:
+            return [perms.IsAdmin()]
+        return [permissions.AllowAny()]
 
     def retrieve(self, request, pk=None):
         try:
@@ -344,8 +360,12 @@ class ThiSinhViewSet(viewsets.ViewSet, generics.ListAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def create(self, request):
-        serializer = self.serializer_class(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
+            if serializer.validated_data.get('user') != request.user:
+                return Response({"detail": "You can only create ThiSinh for yourself."},
+                                status=status.HTTP_403_FORBIDDEN)
+
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -364,6 +384,11 @@ class AdminViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = Admin.objects.all()
     serializer_class = serializers.AdminSerializer
     pagination_class = paginators.ItemPaginator
+
+    def get_permissions(self):
+        if self.action in ['create','destroy', 'update', 'partial_update']:
+            return [perms.IsAdmin()]
+        return [permissions.AllowAny()]
 
     def retrieve(self, request, pk=None):
         try:
@@ -406,8 +431,12 @@ class AdminViewSet(viewsets.ViewSet, generics.ListAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def create(self, request):
-        serializer = self.serializer_class(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
+            if serializer.validated_data.get('user') != request.user:
+                return Response({"detail": "You can only create Admin for yourself."},
+                                status=status.HTTP_403_FORBIDDEN)
+
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -448,9 +477,18 @@ class TuVanVienViewSet(viewsets.ViewSet, generics.ListAPIView):
         except TuVanVien.DoesNotExist:
             return Response({"detail": "Tu van vien not found."}, status=status.HTTP_404_NOT_FOUND)
 
+    def get_permissions(self):
+        if self.action in ['create','destroy', 'update', 'partial_update']:
+            return [perms.IsAdmin()]
+        return [permissions.AllowAny()]
+
     def create(self, request):
-        serializer = self.serializer_class(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
+            if serializer.validated_data.get('user') != request.user:
+                return Response({"detail": "You can only create TuVanVien for yourself."},
+                                status=status.HTTP_403_FORBIDDEN)
+
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -592,6 +630,11 @@ class BannerViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = Banner.objects.all()
     serializer_class = BannerSerializer
 
+    def get_permissions(self):
+        if self.action in ['create', 'destroy', 'update', 'partial_update']:
+            return [perms.IsAdmin()]
+        return [permissions.AllowAny()]
+
     @swagger_auto_schema(responses={200: BannerSerializer(many=True)})
     def list(self, request):
         serializer = self.serializer_class(self.queryset, many=True)
@@ -662,9 +705,12 @@ class TinTucViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
     pagination_class = TintucPaginator
 
     def get_permissions(self):
-        if self.action in ['add_binhluan', 'like']:
+        if self.action in ['create', 'destroy', 'update', 'partial_update']:
+            return [perms.IsAdmin()]
+        elif self.action in ['add_binhluan', 'like']:
             return [permissions.IsAuthenticated()]
-        return [permissions.AllowAny()]
+        else:
+            return [permissions.AllowAny()]
 
     def get_serializer_class(self):
         if self.request.user.is_authenticated:
@@ -779,6 +825,11 @@ class TuyenSinhViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = TuyenSinh.objects.all()
     serializer_class = TuyenSinhSerializer
     pagination_class = paginators.ItemPaginator
+
+    def get_permissions(self):
+        if self.action in ['create','destroy', 'update', 'partial_update']:
+            return [perms.IsAdmin()]
+        return [permissions.AllowAny()]
 
     @swagger_auto_schema(responses={200: TuyenSinhSerializer(many=True)})
     def list(self, request):
