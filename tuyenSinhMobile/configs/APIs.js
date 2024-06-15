@@ -2,7 +2,7 @@ import axios from "axios";
 
 const BASE_URL = 'https://feline-helped-safely.ngrok-free.app/'; 
 
-// const BASE_URL = 'https://neutral-blatantly-ghost.ngrok-free.app'; 
+//const BASE_URL = 'https://neutral-blatantly-ghost.ngrok-free.app/'; 
 
 export const endpoints = {
     khoa: '/khoa/',
@@ -13,17 +13,19 @@ export const endpoints = {
     tuyensinh: '/tuyensinh/',
     tintuc: '/tintuc/',
     banner: '/banner/',
-    user: '/user/',
+    register: '/user/',
     binhluan: '/binhluan/',
     admin: '/Admin/',
-    login: '/o/token/'
+    login: '/o/token/',
+    currentUser: '/user/current_user/'
 };
 
 export const authApi = (token) => {
     return axios.create({
         baseURL: BASE_URL,
         headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
         }
     });
 }

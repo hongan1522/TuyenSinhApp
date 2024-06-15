@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, ScrollView, TouchableOpacity, FlatList, Image, Dimensions } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { authApi, endpoints } from '../../configs/APIs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TYPE_MAP } from '../../configs/typemap';
+import MyContext from '../../configs/MyContext';
 
 const { width } = Dimensions.get('window');
 
@@ -15,41 +16,43 @@ const HomeScreen = ({ navigation }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const flatListRef = useRef(null);
 
+    const [state] = useContext(MyContext); // Get state from context
+
     const loadTinTucs = async () => {
         try {
             let allData = [];
             let nextPage = endpoints.tintuc;
-    
+
             // Fetch all pages
             while (nextPage) {
                 const response = await authApi().get(nextPage);
                 console.log('Tin Tức trả về:', response.data);
-    
+
                 allData = [...allData, ...response.data.results];
                 nextPage = response.data.next;
             }
-    
+
             console.log('All data received from API:', allData);
-    
+
             // Sort data by publication date (assuming the field is named 'updates_date')
             allData.sort((a, b) => new Date(b.updates_date) - new Date(a.updates_date));
-    
+
             const groupedData = { 1: [], 2: [], 3: [], 4: [], 5: [] };
-    
+
             allData.forEach(item => {
                 if (groupedData[item.tuyenSinh]) {
                     groupedData[item.tuyenSinh].push(item);
                 }
             });
-    
+
             console.log('Grouped Data before slicing:', groupedData);
-    
+
             for (let key in groupedData) {
                 groupedData[key] = groupedData[key].slice(0, 5);
             }
-    
+
             console.log('Grouped Data after slicing:', groupedData);
-    
+
             setNewsData(groupedData);
         } catch (ex) {
             setError(ex);
@@ -57,7 +60,6 @@ const HomeScreen = ({ navigation }) => {
             setLoading(false);
         }
     };
-    
 
     const loadSelectedImages = async () => {
         try {
@@ -103,6 +105,12 @@ const HomeScreen = ({ navigation }) => {
 
     return (
         <ScrollView contentContainerStyle={styles.scrollContainer}>
+            {state && state.username && (
+                <View style={styles.avatarContainer}>
+                    <Image source={{ uri: `http://res.cloudinary.com/dcxpivgx4/image/upload/${state.avatar}` }} style={styles.avatar} />
+                    <Text style={styles.userName}>Welcome, {state.username}!</Text>
+                </View>
+            )}
             {selectedImages.length > 0 && (
                 <FlatList
                     ref={flatListRef}
@@ -135,7 +143,6 @@ const HomeScreen = ({ navigation }) => {
                                         onPress={() => navigation.navigate('TinTuc', { id: tintuc.id })}
                                     >
                                         <Text style={styles.tinTucName}>{tintuc.name}</Text>
-                                        
                                     </TouchableOpacity>
                                 ))}
                                 <TouchableOpacity
@@ -159,20 +166,34 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingBottom: 20,
     },
+    avatarContainer: {
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    avatar: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+    },
+    userName: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginTop: 10,
+    },
     bannerContainer: {
         width: '100%',
     },
     bannerItem: {
         width,
-        height: 150, // Adjust the height to your desired value, for example, 150
+        height: 150,
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 0, // No padding
-        margin: 0, // No margin
+        padding: 0,
+        margin: 0,
     },
     bannerImage: {
         width: width,
-        height: '100%', // Ensures the image occupies the full height of the container
+        height: '100%',
         resizeMode: 'cover',
     },
     newsContainer: {
@@ -189,7 +210,7 @@ const styles = StyleSheet.create({
         color: 'red',
     },
     tinTucContainer: {
-        marginBottom: 10, // Decrease margin bottom
+        marginBottom: 10,
         padding: 10,
         backgroundColor: '#fff',
         borderRadius: 10,
@@ -203,45 +224,25 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     tinTucName: {
-        fontSize: 16, // Decrease font size
-        fontWeight: 'bold',
-    },
-    tinTucTuyenSinh: {
-        fontSize: 14, // Decrease font size
-        color: '#555',
-    },
-    loadMoreButton: {
-        alignSelf: 'center',
-        marginTop: 10, // Add some margin top
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        backgroundColor: '#007BFF',
-        borderRadius: 5,
-    },
-    loadMoreButtonText: {
-        color: '#fff',
-        fontSize: 14, // Decrease font size
-        fontWeight: 'bold',
+        fontSize: 16,
     },
     sectionContainer: {
-        width: '100%',
-        marginTop: 20,
-        backgroundColor: '#fff',
-        padding: 10,
-        borderRadius: 10,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
+        marginBottom: 20,
     },
     sectionHeaderText: {
         fontSize: 20,
         fontWeight: 'bold',
         marginBottom: 10,
+    },
+    loadMoreButton: {
+        backgroundColor: '#007BFF',
+        padding: 10,
+        borderRadius: 5,
+        alignItems: 'center',
+    },
+    loadMoreButtonText: {
+        color: '#fff',
+        fontSize: 16,
     },
 });
 

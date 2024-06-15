@@ -23,10 +23,13 @@ const Login = ({ navigation }) => {
             });
 
             const token = response.data.access_token;
-            console.info(response.data);
+
+            // Ensure endpoints.user is correctly defined
+            const userUrl = `${endpoints.currentUser}`;
+            console.log("Fetching user details from URL:", userUrl);
 
             // Fetch the current user details
-            const userResponse = await authApi(token).get(`${endpoints.user}current_user/`);
+            const userResponse = await authApi(token).get(userUrl);
 
             const userData = userResponse.data;
 
@@ -37,7 +40,11 @@ const Login = ({ navigation }) => {
             navigation.navigate("Home");
         } catch (error) {
             console.error("Error logging in:", error);
-            // Handle error here
+
+            if (error.response) {
+                console.error("Response status:", error.response.status);
+                console.error("Response headers:", error.response.headers);
+            }
         }
     };
 

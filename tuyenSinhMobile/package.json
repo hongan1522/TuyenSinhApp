@@ -16,6 +16,7 @@
     "axios": "^1.7.2",
     "expo": "~51.0.9",
     "expo-av": "^14.0.5",
+    "expo-image-picker": "^15.0.5",
     "expo-status-bar": "~1.12.1",
     "he": "^1.2.0",
     "moment": "^2.30.1",

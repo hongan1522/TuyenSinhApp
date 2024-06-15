@@ -14,6 +14,8 @@ import MyContext from './configs/MyContext';
 import MyUserReducer from './reducer/MyUserReducer';
 import Logout from './components/user/logout';
 import KhoaDetail from './components/tuyensinh/KhoaDetail';
+import Register from './components/user/Register';
+
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -30,34 +32,39 @@ const HomeStack = () => {
 
 const KhoaStack = () => {
   return (
-    <Stack.Navigator initialRouteName='KhoaMain'>
-      <Stack.Screen name='KhoaMain' component={Khoa} options={{ title: 'Thông tin các khoa' }}/>
-      <Stack.Screen name="KhoaDetail" component={KhoaDetail} options={{ title: 'Chi tiết khoa' }}/>
+    <Stack.Navigator initialRouteName="KhoaMain">
+      <Stack.Screen name="KhoaMain" component={Khoa} options={{ title: 'Thông tin các khoa' }} />
+      <Stack.Screen name="KhoaDetail" component={KhoaDetail} options={{ title: 'Chi tiết khoa' }} />
     </Stack.Navigator>
-  )
-}
+  );
+};
 
 export default function App() {
   const [user, dispatch] = useReducer(MyUserReducer, null);
+
   return (
     <MyContext.Provider value={[user, dispatch]}>
       <NavigationContainer>
-        <Drawer.Navigator initialRouteName='Home' screenOptions={{headerRight: Logout}}>
-          <Drawer.Screen name='Home' component={HomeStack}/>
-          
-          {user===null?<>
-            <Drawer.Screen name='Login' component={Login} options={{ title: 'Đăng nhập' }}/>
-            </>:<>
-            <Drawer.Screen name={user.username} component={HomeStack} />
-            
-            </>}
-            <Drawer.Screen name='Logout' component={Logout} options={{ drawerItemStyle: {display: "none"} }}/>
-          <Drawer.Screen name='Banner' component={BannerComponent}/>
-          <Drawer.Screen name='Khoa' component={KhoaStack}/>
-          <Drawer.Screen name='Điểm chuẩn' component={DiemKhoa}/>
-        </Drawer.Navigator>
-    </NavigationContainer>
-    </MyContext.Provider>
-  )
-}
+        <Drawer.Navigator initialRouteName="Home" screenOptions={{ headerRight: () => <Logout /> }}>
+          <Drawer.Screen name="Home" component={HomeStack} />
 
+          {user === null ? (
+            <>
+              <Drawer.Screen name="Login" component={Login} options={{ title: 'Đăng nhập' }} />
+              <Drawer.Screen name="Register" component={Register} options={{ title: 'Đăng ký' }} />
+            </>
+          ) : (
+            <>
+              <Drawer.Screen name="UserHome" component={HomeStack} options={{ title: user.username }} />
+            </>
+          )}
+
+          <Drawer.Screen name="Logout" component={Logout} options={{ drawerItemStyle: { display: 'none' } }} />
+          <Drawer.Screen name="Banner" component={BannerComponent} />
+          <Drawer.Screen name="Khoa" component={KhoaStack} />
+          <Drawer.Screen name="Điểm chuẩn" component={DiemKhoa} />
+        </Drawer.Navigator>
+      </NavigationContainer>
+    </MyContext.Provider>
+  );
+}
