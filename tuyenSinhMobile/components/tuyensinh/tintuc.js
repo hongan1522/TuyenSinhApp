@@ -12,6 +12,8 @@ const TinTucScreen = ({ route }) => {
     const [newComment, setNewComment] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [page, setPage] = useState(1);
+    const [hasMoreComments, setHasMoreComments] = useState(true);
 
     useEffect(() => {
         const loadTinTuc = async () => {
@@ -37,6 +39,24 @@ const TinTucScreen = ({ route }) => {
 
         loadTinTuc();
     }, [id]);
+
+    const loadMoreComments = async () => {
+        if (!hasMoreComments) return;
+
+        try {
+            const url = `${endpoints.tintuc}${id}/binhluan/?page=${page}`;
+            const response = await authApi().get(url);
+
+            if (response.data.length === 0) {
+                setHasMoreComments(false);
+            } else {
+                setComments(prevComments => [...prevComments, ...response.data]);
+                setPage(prevPage => prevPage + 1);
+            }
+        } catch (ex) {
+            setError(ex);
+        }
+    };
 
     const formatDate = (dateString) => {
         return moment(dateString).format('DD/MM/YYYY HH:mm');
@@ -80,6 +100,9 @@ const TinTucScreen = ({ route }) => {
                                     <Text style={styles.commentDate}>{formatDate(item.created_date)}</Text>
                                 </View>
                             )}
+                            onEndReached={loadMoreComments}
+                            onEndReachedThreshold={0.1}
+                            ListFooterComponent={hasMoreComments ? <ActivityIndicator /> : null}
                         />
                         <TextInput
                             style={styles.commentInput}

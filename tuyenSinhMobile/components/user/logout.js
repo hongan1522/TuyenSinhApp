@@ -1,19 +1,23 @@
-import { useContext } from "react";
-import { Button } from "react-native"
+import { useContext, useEffect } from "react";
+import { Button, View, Text, ActivityIndicator } from "react-native";
 import MyContext from "../../configs/MyContext";
 
-const Logout = ({navigation}) => {
-    const [user, dispatch] = useContext(MyContext);
+const Logout = ({ navigation }) => {
+  const [user, dispatch] = useContext(MyContext);
 
-    const logout = () => {
-        dispatch({
-            "type": "logout"
-        })
+  useEffect(() => {
+    if (user !== null) {
+      dispatch({ type: "logout" });
     }
-    if (user === null) 
-        return <Button title="Login" onPress={() => navigation.navigate("Login")}/>
-    return (
-        <Button title="Logout" onPress={logout}/>
-    )
-}
+    navigation.navigate("Login");
+  }, []);
+
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <ActivityIndicator size="large" color="#0000ff" />
+      <Text>Logging out...</Text>
+    </View>
+  );
+};
+
 export default Logout;

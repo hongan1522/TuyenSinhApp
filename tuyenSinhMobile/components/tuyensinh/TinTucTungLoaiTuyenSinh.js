@@ -7,15 +7,14 @@ import he from 'he';
 const SeeMoreScreen = ({ route, navigation }) => {
     const { tuyenSinhType } = route.params;
     const [news, setNews] = useState([]);
+    const [displayedNews, setDisplayedNews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const itemsPerPage = 10;
 
-    const loadMoreNews = async () => {
-        if (!hasMore) return;
-
+    const loadAllNews = async () => {
         try {
             let allData = [];
             let nextPage = endpoints.tintuc;
@@ -34,17 +33,12 @@ const SeeMoreScreen = ({ route, navigation }) => {
                 content: striptags(he.decode(item.content)),
             }));
 
-            // Sort data by modification date (assuming the field is named 'modifiedAt')
+            // Sort data by modification date (assuming the field is named 'updates_date')
             cleanedData.sort((a, b) => new Date(b.updates_date) - new Date(a.updates_date));
 
-            // Paginate the data
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = startIndex + itemsPerPage;
-            const pageData = cleanedData.slice(startIndex, endIndex);
-
-            setNews(prevNews => [...prevNews, ...pageData]);
-            setHasMore(pageData.length === itemsPerPage);
-            setCurrentPage(prevPage => prevPage + 1);
+            setNews(cleanedData);
+            setDisplayedNews(cleanedData.slice(0, itemsPerPage));
+            setHasMore(cleanedData.length > itemsPerPage);
         } catch (ex) {
             setError(ex);
         } finally {
@@ -52,11 +46,19 @@ const SeeMoreScreen = ({ route, navigation }) => {
         }
     };
 
+    const loadMoreNews = () => {
+        const startIndex = currentPage * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const pageData = news.slice(startIndex, endIndex);
+
+        setDisplayedNews(prevNews => [...prevNews, ...pageData]);
+        setHasMore(news.length > endIndex);
+        setCurrentPage(prevPage => prevPage + 1);
+    };
+
     useEffect(() => {
-        loadMoreNews();
-        // Log the fetched and sorted data
-        console.log(news);
-    }, [currentPage]);
+        loadAllNews();
+    }, []);
 
     return (
         <View style={styles.container}>
@@ -67,7 +69,7 @@ const SeeMoreScreen = ({ route, navigation }) => {
             ) : (
                 <>
                     <FlatList
-                        data={news}
+                        data={displayedNews}
                         keyExtractor={(item) => item.id.toString()}
                         renderItem={({ item }) => (
                             <TouchableOpacity

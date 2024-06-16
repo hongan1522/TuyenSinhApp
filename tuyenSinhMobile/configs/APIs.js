@@ -1,8 +1,8 @@
 import axios from "axios";
 
-const BASE_URL = 'https://feline-helped-safely.ngrok-free.app/'; 
+//const BASE_URL = 'https://feline-helped-safely.ngrok-free.app/'; 
 
-//const BASE_URL = 'https://neutral-blatantly-ghost.ngrok-free.app/'; 
+const BASE_URL = 'https://neutral-blatantly-ghost.ngrok-free.app/'; 
 
 export const endpoints = {
     khoa: '/khoa/',
@@ -25,6 +25,15 @@ export const authApi = (token) => {
         baseURL: BASE_URL,
         headers: {
             'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+        }
+    });
+}
+
+export const registerApi = () => {
+    return axios.create({
+        baseURL: BASE_URL,
+        headers: {
             'Content-Type': 'multipart/form-data',
         }
     });

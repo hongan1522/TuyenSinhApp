@@ -105,10 +105,15 @@ const HomeScreen = ({ navigation }) => {
 
     return (
         <ScrollView contentContainerStyle={styles.scrollContainer}>
-            {state && state.username && (
-                <View style={styles.avatarContainer}>
+            <View style={styles.headerContainer}>
+                
+                {state && state.avatar && (
                     <Image source={{ uri: `http://res.cloudinary.com/dcxpivgx4/image/upload/${state.avatar}` }} style={styles.avatar} />
-                    <Text style={styles.userName}>Welcome, {state.username}!</Text>
+                )}
+            </View>
+            {state && state.username && (
+                <View style={styles.welcomeContainer}>
+                    <Text style={styles.welcomeText}>Welcome, {state.username}!</Text>
                 </View>
             )}
             {selectedImages.length > 0 && (
@@ -149,7 +154,7 @@ const HomeScreen = ({ navigation }) => {
                                     style={styles.loadMoreButton}
                                     onPress={() => navigation.navigate('SeeMore', { tuyenSinhType: parseInt(key) })}
                                 >
-                                    <Text style={styles.loadMoreButtonText}>Xem Thêm</Text>
+                                    <Text style={styles.loadMoreButtonText}>Xem Thêm 1</Text>
                                 </TouchableOpacity>
                             </View>
                         ))}
@@ -165,23 +170,36 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         alignItems: 'center',
         paddingBottom: 20,
+        marginTop: 0,
     },
-    avatarContainer: {
+    headerContainer: {
+        flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 20,
+        justifyContent: 'space-between',
+        width: '100%',
+        padding: 0,
+        backgroundColor: '#f5f5f5',
+    },
+    headerTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        margin: 0,
+        padding: 0,
     },
     avatar: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
     },
-    userName: {
-        fontSize: 18,
+    welcomeContainer: {
+        marginVertical: 0,
+        alignItems: 'center',
+        marginTop: 0,
+        marginBottom: 10,
+    },
+    welcomeText: {
+        fontSize: 20,
         fontWeight: 'bold',
-        marginTop: 10,
-    },
-    bannerContainer: {
-        width: '100%',
     },
     bannerItem: {
         width,
@@ -192,7 +210,7 @@ const styles = StyleSheet.create({
         margin: 0,
     },
     bannerImage: {
-        width: width,
+        width: '100%',
         height: '100%',
         resizeMode: 'cover',
     },

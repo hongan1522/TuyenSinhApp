@@ -294,9 +294,9 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get_permissions(self):
-        if self.action in ['current_user']:
-            return [permissions.IsAuthenticated()]
-        elif self.action in ['create', 'destroy', 'update', 'partial_update']:
+        if self.action in ['create', 'current_user']:
+            return [permissions.AllowAny()]
+        elif self.action in ['destroy', 'update', 'partial_update']:
             if self.request.user.is_authenticated:
                 return [perms.IsAdmin()]
             else:

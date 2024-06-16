@@ -36,8 +36,8 @@ const BannerComponent = ({ onSave }) => {
             const fetchedData = [];
             let id = 1;
             while (id <= maxId) {
-                //const response = await fetch(`https://neutral-blatantly-ghost.ngrok-free.app/banner/${id}`);
-                const response = await fetch(`https://feline-helped-safely.ngrok-free.app/banner/${id}`);
+                const response = await fetch(`https://neutral-blatantly-ghost.ngrok-free.app/banner/${id}`);
+                //const response = await fetch(`https://feline-helped-safely.ngrok-free.app/banner/${id}`);
                 if (!response.ok) {
                     break;
                 }
