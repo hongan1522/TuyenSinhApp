@@ -11,5 +11,7 @@
 
 ## The steps run the project Mobile
 1. Executing the command: npm install
-2. Executing the command: npm start
-3. Choosing the options to run
+2. Checking BASE_URL in config/APIs.js is: "https://feline-helped-safely.ngrok-free.app/"
+3. Checking client_id and client_secret in component/user/login.js are the same as CLIENT_ID and CLIENT_SECRET in setting.py of TuyenSinhApp
+4. Executing the command: npm start
+5. Choosing the options to run
