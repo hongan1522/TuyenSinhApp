@@ -5,7 +5,9 @@
 3. Reinstalling the libraries: pip install -r requirements.txt
 4. Checking database in settings.py and creating an empty database
 5. Executing the migrations: python manage.py migrate
-6. Creating an superuser (python manage.py createsuperuser) and accessing admin page to test
+6. Open file "ngrok.exe"
+7. Type "ngrok http --domain=feline-helped-safely.ngrok-free.app 8000" and Enter
+8. Creating an superuser (python manage.py createsuperuser) and accessing admin page to test
 
 ## The steps run the project Mobile
 1. Executing the command: npm install
