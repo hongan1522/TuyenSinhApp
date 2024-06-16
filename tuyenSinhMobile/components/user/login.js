@@ -13,8 +13,10 @@ const Login = ({ navigation }) => {
       const formData = new URLSearchParams();
       formData.append('username', username);
       formData.append('password', password);
-      formData.append('client_id', '7kOVvXyCtjlPZpjucl3lLKIOBQXSDETQT4ZALSkN');
-      formData.append('client_secret', 'Gy5nwbxc89HwhYD2uCOFkwD9HlaOE8T0t9yx4YUIdJiqHgt7BS2gJx12KXLulOPNaM9RFnL7ILonalzXjnsNEsi04g8YMWBlaRlBtalZVk0C6sjm2jQtFCa7YQvAu7qG');
+      // formData.append('client_id', '7kOVvXyCtjlPZpjucl3lLKIOBQXSDETQT4ZALSkN');
+      // formData.append('client_secret', 'Gy5nwbxc89HwhYD2uCOFkwD9HlaOE8T0t9yx4YUIdJiqHgt7BS2gJx12KXLulOPNaM9RFnL7ILonalzXjnsNEsi04g8YMWBlaRlBtalZVk0C6sjm2jQtFCa7YQvAu7qG');
+      formData.append('client_id', 'oqqD4UHEG9XxE0AanGZUBRhEv3pBols6DNRDJ3dL');
+      formData.append('client_secret', 'EIOaeXW9dLbZsAmiFzSUz4ODh19Knn7VtK4w9fiyIc6Pdi5JHTIQqENTwK97Pcjw82gGoKOFaRrHcYE2MN9hK3Y33IKCcglJAxYOblkL4iqobr6b8JCisGqRmyBtnCYH');
       formData.append('grant_type', 'password');
 
       const response = await authApi().post(endpoints.login, formData.toString(), {
