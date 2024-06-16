@@ -1,5 +1,8 @@
 from rest_framework import pagination
 
+class QuestionPaginator(pagination.PageNumberPagination):
+    page_size = 25
+
 class ItemPaginator(pagination.PageNumberPagination):
     page_size = 4
 

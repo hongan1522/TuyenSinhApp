@@ -6,11 +6,12 @@ from django.template.response import TemplateResponse
 from django.urls import path
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from tuyenSinh.models import Khoa, Diem, ThiSinh, TuyenSinh, TinTuc, BinhLuan, Banner, Diem_Khoa, TuVanVien, User, Admin
+from tuyenSinh.models import Khoa, Diem, ThiSinh, TuyenSinh, TinTuc, BinhLuan, \
+    Banner, Diem_Khoa, TuVanVien, User, Admin, Question, Answer
 from django.utils.html import mark_safe, format_html
 from django import forms
 from ckeditor_uploader.widgets import CKEditorUploadingWidget
-from tuyenSinh.models import Khoa
+from oauth2_provider.models import Application
 
 
 # Custom AdminSite
@@ -209,6 +210,11 @@ class BinhLuanAdmin(admin.ModelAdmin):
     ordering = ['id']
     form = BinhLuanForm
 
+    class Media:
+        css = {
+            'all': ['/static/css/style.css']
+        }
+
 class BannerAdmin(admin.ModelAdmin):
     list_display = ['id', 'image_preview']
     ordering = ['id']
@@ -285,25 +291,13 @@ class TuyenSinhAdmin(admin.ModelAdmin):
 
     formatted_end_date.short_description = 'End Date'
 
-class CustomUserCreationForm(UserCreationForm):
-    class Meta(UserCreationForm.Meta):
-        model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'role', 'avatar')
-
-class CustomUserChangeForm(UserChangeForm):
-    class Meta:
-        model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'role', 'avatar')
-
 class UserAdmin(BaseUserAdmin):
-    add_form = CustomUserCreationForm
-    form = CustomUserChangeForm
     model = User
     list_display = ('id', 'username', 'email', 'role')
     search_fields = ('username', 'email')
     list_filter = ('role',)
     ordering = ('id',)
-    readonly_fields = ('user_avatar', )
+    readonly_fields = ('user_avatar',)
 
     def user_avatar(self, obj):
         if obj.avatar:
@@ -333,6 +327,35 @@ class UserAdmin(BaseUserAdmin):
             'all': ['/static/css/style.css']
         }
 
+class QuestionAdmin(admin.ModelAdmin):
+    list_display = ['id', 'thisinh', 'question_text']
+    search_fields = ['thisinh']
+    ordering = ['id']
+
+    class Media:
+        css = {
+            'all': ['/static/css/style.css']
+        }
+
+class QuestionAdmin(admin.ModelAdmin):
+    list_display = ['id', 'thisinh', 'question_text']
+    search_fields = ['thisinh']
+    ordering = ['id']
+
+    class Media:
+        css = {
+            'all': ['/static/css/style.css']
+        }
+
+class AnswerAdmin(admin.ModelAdmin):
+    list_display = ['id', 'question', 'tuvanvien']
+    search_fields = ['tuvanvien', 'question']
+    ordering = ['id']
+
+    class Media:
+        css = {
+            'all': ['/static/css/style.css']
+        }
 
 admin_site.register(Khoa, KhoaAdmin)
 admin_site.register(Diem, DiemAdmin)
@@ -345,6 +368,7 @@ admin_site.register(Banner, BannerAdmin)
 admin_site.register(BinhLuan, BinhLuanAdmin)
 admin_site.register(Admin, AdminAdmin)
 admin_site.register(User, UserAdmin)
-from oauth2_provider.models import Application
+admin_site.register(Question, QuestionAdmin)
+admin_site.register(Answer, AnswerAdmin)
 
 admin_site.register(Application)

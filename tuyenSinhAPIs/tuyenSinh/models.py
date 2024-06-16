@@ -235,6 +235,45 @@ class Like(Interation):
     class Meta:
         unique_together = ('tintuc', 'user')
 
+class Question(BaseModel):
+    thisinh = models.ForeignKey(User, on_delete=models.CASCADE, related_name='questions')
+    question_text = RichTextField()
+    is_frequently_asked = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=False)
+
+    def clean(self):
+        if self.thisinh and self.thisinh.role != User.THI_SINH:
+            raise ValidationError({'thisinh': ('Người dùng này không phải là thí sinh')})
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = 'Câu hỏi'
+        verbose_name_plural = 'Câu hỏi'
+        ordering = ['id']
+
+    def __str__(self):
+        return self.question_text[:50]
+
+class Answer(BaseModel):
+    question = models.OneToOneField(Question, on_delete=models.CASCADE, related_name='fk_question')
+    tuvanvien = models.ForeignKey(User, on_delete=models.CASCADE, related_name='answers')
+    answer_text = RichTextField(blank=True)
+
+    def clean(self):
+        if self.tuvanvien and self.tuvanvien.role != User.TU_VAN_VIEN:
+            raise ValidationError({'tuvanvien': ('Người dùng này không phải là tư vấn viên')})
+
+    class Meta:
+        verbose_name = 'Câu trả lời'
+        verbose_name_plural = 'Câu trả lời'
+        ordering = ['id']
+
+    def __str__(self):
+        return self.answer_text[:50]
+
 
 
 

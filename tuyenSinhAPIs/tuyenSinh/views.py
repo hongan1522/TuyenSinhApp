@@ -1,13 +1,15 @@
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, generics, status, parsers, permissions
-from tuyenSinh.models import Khoa, Diem, Diem_Khoa, ThiSinh, TuVanVien, User, TuyenSinh, TinTuc, Banner, BinhLuan, Admin, Like
+from tuyenSinh.models import Khoa, Diem, Diem_Khoa, ThiSinh, TuVanVien, User, TuyenSinh, \
+    TinTuc, Banner, BinhLuan, Admin, Like, Question, Answer
 from tuyenSinh import serializers, paginators, perms
 from rest_framework.decorators import action
 import datetime
 from tuyenSinh.serializers import TuyenSinhSerializer, TinTucSerializer, BannerSerializer, KhoaSerializer, \
-    AuthenticatedTinTucSerializer, BinhLuanSerializer
-from .paginators import ItemPaginator, BinhLuanPaginator, TintucPaginator
-
+    AuthenticatedTinTucSerializer, BinhLuanSerializer, QuestionSerializer, AnswerSerializer
+from .paginators import ItemPaginator, BinhLuanPaginator, TintucPaginator, QuestionPaginator
+from django.utils import timezone
+from django.core.exceptions import PermissionDenied
 
 # ViewSets
 class KhoaViewSet(viewsets.ViewSet, generics.ListAPIView):
@@ -34,8 +36,11 @@ class KhoaViewSet(viewsets.ViewSet, generics.ListAPIView):
             return Response({"detail": "Khoa not found."}, status=status.HTTP_404_NOT_FOUND)
 
     def get_permissions(self):
-        if self.action in ['create','destroy', 'update', 'partial_update']:
-            return [perms.IsAdmin()]
+        if self.action in ['create', 'destroy', 'update', 'partial_update']:
+            if self.request.user.is_authenticated:
+                return [perms.IsAdmin()]
+            else:
+                return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
 
     def create(self, request):
@@ -134,8 +139,11 @@ class DiemViewSet(viewsets.ViewSet, generics.ListAPIView):
     pagination_class = paginators.ItemPaginator
 
     def get_permissions(self):
-        if self.action in ['create','destroy', 'update', 'partial_update']:
-            return [perms.IsAdmin()]
+        if self.action in ['create', 'destroy', 'update', 'partial_update']:
+            if self.request.user.is_authenticated:
+                return [perms.IsAdmin()]
+            else:
+                return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
 
     def retrieve(self, request, pk=None):
@@ -179,8 +187,11 @@ class DiemKhoaViewSet(viewsets.ViewSet, generics.ListAPIView):
     pagination_class = paginators.ItemPaginator
 
     def get_permissions(self):
-        if self.action in ['create','destroy', 'update', 'partial_update']:
-            return [perms.IsAdmin()]
+        if self.action in ['create', 'destroy', 'update', 'partial_update']:
+            if self.request.user.is_authenticated:
+                return [perms.IsAdmin()]
+            else:
+                return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
 
     def retrieve(self, request, pk=None):
@@ -233,6 +244,7 @@ class DiemKhoaViewSet(viewsets.ViewSet, generics.ListAPIView):
 class UserViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = User.objects.filter(is_active=True)
     serializer_class = serializers.UserSerializer
+    pagination_class = paginators.ItemPaginator
 
     def create(self, request):
         serializer = self.serializer_class(data=request.data)
@@ -284,6 +296,11 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView):
     def get_permissions(self):
         if self.action in ['current_user']:
             return [permissions.IsAuthenticated()]
+        elif self.action in ['create', 'destroy', 'update', 'partial_update']:
+            if self.request.user.is_authenticated:
+                return [perms.IsAdmin()]
+            else:
+                return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
 
     @action(methods=['get', 'patch'], url_path='', detail=False)
@@ -315,8 +332,11 @@ class ThiSinhViewSet(viewsets.ViewSet, generics.ListAPIView):
         return queryset
 
     def get_permissions(self):
-        if self.action in ['create','destroy', 'update', 'partial_update']:
-            return [perms.IsAdmin()]
+        if self.action in ['create', 'destroy', 'update', 'partial_update']:
+            if self.request.user.is_authenticated:
+                return [perms.IsAdmin()]
+            else:
+                return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
 
     def retrieve(self, request, pk=None):
@@ -386,8 +406,11 @@ class AdminViewSet(viewsets.ViewSet, generics.ListAPIView):
     pagination_class = paginators.ItemPaginator
 
     def get_permissions(self):
-        if self.action in ['create','destroy', 'update', 'partial_update']:
-            return [perms.IsAdmin()]
+        if self.action in ['create', 'destroy', 'update', 'partial_update']:
+            if self.request.user.is_authenticated:
+                return [perms.IsAdmin()]
+            else:
+                return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
 
     def retrieve(self, request, pk=None):
@@ -478,8 +501,11 @@ class TuVanVienViewSet(viewsets.ViewSet, generics.ListAPIView):
             return Response({"detail": "Tu van vien not found."}, status=status.HTTP_404_NOT_FOUND)
 
     def get_permissions(self):
-        if self.action in ['create','destroy', 'update', 'partial_update']:
-            return [perms.IsAdmin()]
+        if self.action in ['create', 'destroy', 'update', 'partial_update']:
+            if self.request.user.is_authenticated:
+                return [perms.IsAdmin()]
+            else:
+                return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
 
     def create(self, request):
@@ -632,7 +658,10 @@ class BannerViewSet(viewsets.ViewSet, generics.ListAPIView):
 
     def get_permissions(self):
         if self.action in ['create', 'destroy', 'update', 'partial_update']:
-            return [perms.IsAdmin()]
+            if self.request.user.is_authenticated:
+                return [perms.IsAdmin()]
+            else:
+                return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
 
     @swagger_auto_schema(responses={200: BannerSerializer(many=True)})
@@ -706,7 +735,10 @@ class TinTucViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
 
     def get_permissions(self):
         if self.action in ['create', 'destroy', 'update', 'partial_update']:
-            return [perms.IsAdmin()]
+            if self.request.user.is_authenticated:
+                return [perms.IsAdmin()]
+            else:
+                return [permissions.IsAuthenticated()]
         elif self.action in ['add_binhluan', 'like']:
             return [permissions.IsAuthenticated()]
         else:
@@ -827,8 +859,11 @@ class TuyenSinhViewSet(viewsets.ViewSet, generics.ListAPIView):
     pagination_class = paginators.ItemPaginator
 
     def get_permissions(self):
-        if self.action in ['create','destroy', 'update', 'partial_update']:
-            return [perms.IsAdmin()]
+        if self.action in ['create', 'destroy', 'update', 'partial_update']:
+            if self.request.user.is_authenticated:
+                return [perms.IsAdmin()]
+            else:
+                return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
 
     @swagger_auto_schema(responses={200: TuyenSinhSerializer(many=True)})
@@ -908,3 +943,143 @@ class TuyenSinhViewSet(viewsets.ViewSet, generics.ListAPIView):
             khoa = khoa.filter(name__icontains=q)
 
         return Response(KhoaSerializer(khoa, many=True).data, status=status.HTTP_200_OK)
+
+class QuestionViewSet(viewsets.ViewSet, generics.ListAPIView):
+    queryset = Question.objects.all().order_by('id')
+    serializer_class = QuestionSerializer
+    pagination_class = QuestionPaginator
+
+    def get_permissions(self):
+        if self.action in ['create', ]:
+            return [permissions.IsAuthenticated()]
+        elif self.action in ['approve', 'set_frequently_asked']:
+            return [perms.IsAdmin()]
+        elif self.action in ['add_answer']:
+            return [perms.IsTuVanVien()]
+        elif self.action in ['destroy', 'update']:
+            return [perms.QuestionOwner()]
+        return [permissions.AllowAny()]
+
+    def create(self, request):
+        data = request.data.copy()
+        data['thisinh'] = request.user.id
+
+        serializer = self.serializer_class(data=data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # Duyet
+    @action(detail=True, methods=['post'])
+    def approve(self, request, pk=None):
+        question = self.get_object()
+        question.is_approved = True
+        question.save()
+        return Response({'status': 'question approved'})
+
+    @action(detail=True, methods=['post'])
+    def set_frequently_asked(self, request, pk=None):
+        question = self.get_object()
+        serializer = serializers.SetFrequentlyQuestionSerializer(data=request.data)
+
+        if serializer.is_valid():
+            is_frequently_asked = serializer.validated_data['is_frequently_asked']
+            question.is_frequently_asked = is_frequently_asked
+            question.save()
+
+            return Response({'status': 'Successfully updated is_frequently_asked'},
+                            status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, pk=None):
+        try:
+            q = Question.objects.get(pk=pk)
+        except Question.DoesNotExist:
+            return Response({"detail": "Question not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        self.check_object_permissions(request, q)
+
+        serializer = serializers.UpdateQuestionSerializer(q, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, pk=None):
+        try:
+            question = Question.objects.get(pk=pk)
+
+            self.check_object_permissions(request, question)
+
+            question.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Khoa.DoesNotExist:
+            return Response({"detail": "Question not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=True, methods=['post'], url_path='add_answer')
+    def add_answer(self, request, pk=None):
+        question = self.get_object()
+
+        try:
+            existing_answer = Answer.objects.get(question=question)
+            return Response({'error': 'This question already has an answer'}, status=status.HTTP_400_BAD_REQUEST)
+        except Answer.DoesNotExist:
+            pass
+
+        serializer = serializers.AddAnswerSerializer(data=request.data)
+        if serializer.is_valid():
+            answer_text = serializer.validated_data.get('answer_text')
+
+            answer = Answer.objects.create(
+                question=question,
+                tuvanvien=request.user,
+                answer_text=answer_text
+            )
+
+            question.answered_at = timezone.now()
+            question.save()
+
+            return Response({'status': 'Answer added successfully', 'data': AnswerSerializer(answer).data},
+                            status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class AnswerViewSet(viewsets.ViewSet, generics.ListAPIView):
+    queryset = Answer.objects.all().order_by('id')
+    serializer_class = AnswerSerializer
+    pagination_class = ItemPaginator
+
+    def get_permissions(self):
+        if self.action in ['update', 'destroy']:
+            return [perms.AnswerOwner()]
+        return [permissions.AllowAny()]
+
+    def update(self, request, pk=None):
+        try:
+            answer = Answer.objects.get(pk=pk)
+        except Answer.DoesNotExist:
+            return Response({'error': 'Answer not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        self.check_object_permissions(request, answer)
+
+        serializer = serializers.UpdateAnswerSerializer(answer, data=request.data)
+        if serializer.is_valid():
+            serializer.save(updates_date=timezone.now())
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, pk=None):
+        try:
+            answer = Answer.objects.get(pk=pk)
+            self.check_object_permissions(request, answer)
+            answer.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Khoa.DoesNotExist:
+            return Response({"detail": "Answer not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
+

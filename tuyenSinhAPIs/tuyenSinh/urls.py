@@ -32,6 +32,8 @@ r.register('banner', views.BannerViewSet)
 r.register('user', views.UserViewSet, 'User')
 r.register('binhluan', views.BinhLuanViewSet, 'Bình luận')
 r.register('Admin', views.AdminViewSet, 'Admin')
+r.register('question', views.QuestionViewSet, 'Câu hỏi')
+r.register('answer', views.AnswerViewSet, 'Câu trả lời')
 
 urlpatterns = [
     path('', include(r.urls)),

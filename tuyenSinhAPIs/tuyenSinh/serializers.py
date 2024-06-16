@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from tuyenSinh.models import Khoa, Diem, Diem_Khoa, ThiSinh, TuVanVien, User, TuyenSinh, TinTuc, Banner, BinhLuan, Admin
+from tuyenSinh.models import Khoa, Diem, Diem_Khoa, ThiSinh, TuVanVien, \
+    User, TuyenSinh, TinTuc, Banner, BinhLuan, Admin, Question, Answer
 
 class KhoaSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
@@ -114,6 +115,39 @@ class BannerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Banner
         fields = ['id', 'image', 'created_date', 'updates_date',]
+
+class QuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Question
+        fields = ['id', 'thisinh', 'question_text', 'is_frequently_asked', 'created_date']
+
+class UpdateQuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Question
+        fields = ['id', 'question_text', 'updates_date']
+
+class SetFrequentlyQuestionSerializer(serializers.Serializer):
+    is_frequently_asked = serializers.BooleanField()
+
+class AssignTuvanvienSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Answer
+        fields = ['question', 'tuvanvien']
+
+class AddAnswerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Answer
+        fields = ['id', 'answer_text', 'created_date']
+
+class UpdateAnswerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Answer
+        fields = ['id', 'answer_text', 'updates_date']
+
+class AnswerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Answer
+        fields = ['id', 'question', 'tuvanvien', 'answer_text', 'created_date']
 
 # DetailSerializers
 class KhoaDetailSerializer(KhoaSerializer):
