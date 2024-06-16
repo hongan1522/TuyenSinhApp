@@ -7,7 +7,7 @@ from django.urls import path
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from tuyenSinh.models import Khoa, Diem, ThiSinh, TuyenSinh, TinTuc, BinhLuan, \
-    Banner, Diem_Khoa, TuVanVien, User, Admin, Question, Answer
+    Banner, Diem_Khoa, TuVanVien, User, Admin, Question, Answer, Livestream
 from django.utils.html import mark_safe, format_html
 from django import forms
 from ckeditor_uploader.widgets import CKEditorUploadingWidget
@@ -357,6 +357,17 @@ class AnswerAdmin(admin.ModelAdmin):
             'all': ['/static/css/style.css']
         }
 
+class LivestreamAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'date_time', 'description')
+    search_fields = ['id', 'title']
+    ordering = ['date_time']
+
+    class Media:
+        css = {
+            'all': ['/static/css/style.css']
+        }
+
+
 admin_site.register(Khoa, KhoaAdmin)
 admin_site.register(Diem, DiemAdmin)
 admin_site.register(Diem_Khoa, Diem_KhoaAdmin)
@@ -370,5 +381,5 @@ admin_site.register(Admin, AdminAdmin)
 admin_site.register(User, UserAdmin)
 admin_site.register(Question, QuestionAdmin)
 admin_site.register(Answer, AnswerAdmin)
-
+admin_site.register(Livestream, LivestreamAdmin)
 admin_site.register(Application)

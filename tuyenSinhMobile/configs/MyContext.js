@@ -5,13 +5,20 @@ const MyContext = createContext();
 const initialState = {
   token: null,
   username: null,
+  avatar: null,
+  role: null,
   // Add other user details as needed
 };
 
 const reducer = (state, action) => {
   switch (action.type) {
     case "login":
-      return { ...state, token: action.payload.token, username: action.payload.username, ...action.payload };
+      return { 
+        ...state, 
+        token: action.payload.token, 
+        username: action.payload.username, 
+        avatar: action.payload.avatar,
+        role: action.payload.role, };
     case "logout":
       return { ...initialState };
     default:

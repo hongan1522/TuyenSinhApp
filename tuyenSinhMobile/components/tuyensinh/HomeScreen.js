@@ -113,7 +113,7 @@ const HomeScreen = ({ navigation }) => {
             </View>
             {state && state.username && (
                 <View style={styles.welcomeContainer}>
-                    <Text style={styles.welcomeText}>Welcome, {state.username}!</Text>
+                    <Text style={styles.welcomeText}>Xin chào, {state.username}!</Text>
                 </View>
             )}
             {selectedImages.length > 0 && (

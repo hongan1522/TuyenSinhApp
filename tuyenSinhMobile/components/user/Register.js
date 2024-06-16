@@ -151,7 +151,7 @@ placeholder='Email...'
 style={styles.input}
 />
 <TouchableOpacity style={styles.avatarButton} onPress={pickAvatar}>
-<Text style={styles.avatarButtonText}>{avatar ? 'Change Avatar' : 'Pick an Avatar'}</Text>
+<Text style={styles.avatarButtonText}>{avatar ? 'Change Avatar 1' : 'Pick an Avatar 1'}</Text>
 </TouchableOpacity>
 {avatar && (
 <Image source={{ uri: avatar }} style={styles.avatar} />

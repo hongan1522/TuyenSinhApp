@@ -183,3 +183,10 @@ class TuVanVienDetailSerializer(ThiSinhSerializer):
     class Meta:
         model = TuVanVienSerializer.Meta.model
         fields = TuVanVienSerializer.Meta.fields + ['khoa']
+
+from .models import Livestream
+
+class LivestreamSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Livestream
+        fields = '__all__'

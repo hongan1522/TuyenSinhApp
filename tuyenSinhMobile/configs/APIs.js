@@ -17,7 +17,10 @@ export const endpoints = {
     binhluan: '/binhluan/',
     admin: '/Admin/',
     login: '/o/token/',
-    currentUser: '/user/current_user/'
+    currentUser: '/user/current_user/',
+    question: '/question/',
+    answer: '/answer/',
+    livestream: '/livestream/',
 };
 
 export const authApi = (token) => {
@@ -30,14 +33,6 @@ export const authApi = (token) => {
     });
 }
 
-export const registerApi = () => {
-    return axios.create({
-        baseURL: BASE_URL,
-        headers: {
-            'Content-Type': 'multipart/form-data',
-        }
-    });
-}
 
 export default axios.create({ 
     baseURL: BASE_URL

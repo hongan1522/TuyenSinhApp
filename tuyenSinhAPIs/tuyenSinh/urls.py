@@ -34,6 +34,7 @@ r.register('binhluan', views.BinhLuanViewSet, 'Bình luận')
 r.register('Admin', views.AdminViewSet, 'Admin')
 r.register('question', views.QuestionViewSet, 'Câu hỏi')
 r.register('answer', views.AnswerViewSet, 'Câu trả lời')
+r.register('livestream',views.LivestreamViewSet, 'Lịch livestream')
 
 urlpatterns = [
     path('', include(r.urls)),

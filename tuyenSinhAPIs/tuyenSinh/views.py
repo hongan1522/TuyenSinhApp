@@ -571,10 +571,11 @@ class TuVanVienViewSet(viewsets.ViewSet, generics.ListAPIView):
 
         return Response(serializers.KhoaSerializer(k, many=True).data, status.HTTP_200_OK)
 
+
 class BinhLuanViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = BinhLuan.objects.all()
     serializer_class = serializers.BinhLuanSerializer
-    pagination_class = paginators.ItemPaginator
+    pagination_class = paginators.BinhLuanPaginator
 
     def get_queryset(self):
         queryset = self.queryset
@@ -584,6 +585,20 @@ class BinhLuanViewSet(viewsets.ViewSet, generics.ListAPIView):
             queryset = queryset.filter(tintuc_id=tintuc)
 
         return queryset
+
+    @action(detail=False, url_path='tintuc/(?P<tintuc_id>[^/.]+)')
+    def binhluan_tintuc(self, request, tintuc_id=None):
+        try:
+            queryset = self.filter_queryset(BinhLuan.objects.filter(tintuc_id=tintuc_id)).order_by('-created_date')
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.serializer_class(page, many=True)
+                return self.get_paginated_response(serializer.data)
+
+            serializer = self.serializer_class(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except BinhLuan.DoesNotExist:
+            return Response({"detail": "Tin tức không có bình luận."}, status=status.HTTP_404_NOT_FOUND)
 
     def retrieve(self, request, pk=None):
         try:
@@ -607,6 +622,13 @@ class BinhLuanViewSet(viewsets.ViewSet, generics.ListAPIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except BinhLuan.DoesNotExist:
             return Response({"detail": "BinhLuan not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def create(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, pk=None):
         try:
@@ -1083,3 +1105,91 @@ class AnswerViewSet(viewsets.ViewSet, generics.ListAPIView):
 
 
 
+from .models import Livestream
+from .serializers import LivestreamSerializer
+
+class LivestreamViewSet(viewsets.ModelViewSet):
+    queryset = Livestream.objects.all().order_by('-created_at')
+    serializer_class = LivestreamSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, pk=None, *args, **kwargs):
+        try:
+            livestream = Livestream.objects.get(pk=pk)
+        except Livestream.DoesNotExist:
+            return Response({'error': 'Livestream not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.get_serializer(livestream, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, pk=None, *args, **kwargs):
+        try:
+            livestream = Livestream.objects.get(pk=pk)
+        except Livestream.DoesNotExist:
+            return Response({'error': 'Livestream not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        livestream.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None, *args, **kwargs):
+        try:
+            livestream = Livestream.objects.get(pk=pk)
+        except Livestream.DoesNotExist:
+            return Response({'error': 'Livestream not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.get_serializer(livestream)
+        return Response(serializer.data)
+
+    def get_permissions(self):
+        if self.action in ['update', 'destroy']:
+            return [perms.AnswerOwner()]
+        return [permissions.AllowAny()]
+
+from django.core.mail import send_mail
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+@csrf_exempt
+def send_new_question_email(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            recipient = data.get('recipient')
+            question_text = data.get('questionText')
+
+            # Replace with your own email sending logic
+            send_mail(
+                'Notification: New Question',
+                f'You have a new question to answer: {question_text}',
+                '2051052121thanh@ou.edu.vn',  # Replace with your email
+                [recipient],
+                fail_silently=False,
+            )
+
+            return JsonResponse({'message': 'Email sent successfully'}, status=200)
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)

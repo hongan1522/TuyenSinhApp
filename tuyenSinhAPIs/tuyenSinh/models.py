@@ -274,6 +274,20 @@ class Answer(BaseModel):
     def __str__(self):
         return self.answer_text[:50]
 
+class Livestream(models.Model):
+    title = models.CharField(max_length=255)
+    date_time = models.DateTimeField()
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Livestream'
+        verbose_name_plural = 'Livestreams'
+        ordering = ['-date_time']
+
+    def __str__(self):
+        return self.title
+
 
 
 

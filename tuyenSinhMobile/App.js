@@ -17,6 +17,8 @@ import Login from './components/user/login';
 import Register from './components/user/Register';
 import Logout from './components/user/logout';
 import CustomDrawerContent from './components/utils/customdrawer';
+import LivestreamPage from './components/tuyensinh/LiveStream';
+import QuestionListScreen from './components/tuyensinh/QuestionList';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -87,9 +89,11 @@ const App = () => {
             />
           ) : (
             <>
-              <Drawer.Screen name="Home" component={HomeStack} />
+              <Drawer.Screen name="Home" component={HomeStack}options={{ title: 'Trang chủ' }} />
               <Drawer.Screen name="Khoa" component={KhoaStack} />
               <Drawer.Screen name="Điểm chuẩn" component={DiemKhoa} />
+              <Stack.Screen name="Livestream" component={LivestreamPage} options={{ title: 'Quản lý Livestream' }} />
+              <Stack.Screen name="Question" component={QuestionListScreen} options={{ title: 'Các câu hỏi và câu trả lời' }} />
               <Drawer.Screen
                 name="Banner"
                 component={BannerComponent}
